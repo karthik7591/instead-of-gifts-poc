@@ -1,0 +1,155 @@
+<div class="img-upload">
+
+  <!-- ── Hidden file input ─────────────────────────────────────────────────── -->
+  <input
+    #fileInput
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    class="sr-only"
+    aria-label="Upload cover image"
+    (change)="onFileSelected($event)"
+  />
+
+  <!-- ── Preview state ─────────────────────────────────────────────────────── -->
+  @if (previewUrl()) {
+    <div
+      class="img-preview"
+      [class.img-preview--drag]="isDragOver()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+      aria-label="Cover image preview"
+    >
+
+      <!-- Image -->
+      <img
+        [src]="previewUrl()!"
+        alt="Cover image preview"
+        class="img-preview__img"
+        [class.img-preview__img--dim]="isActive()"
+      />
+
+      <!-- Drag-to-replace hint -->
+      @if (isDragOver()) {
+        <div class="img-preview__drag-hint" aria-hidden="true">
+          <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+          </svg>
+          Drop to replace
+        </div>
+      }
+
+      <!-- Progress overlay (shown during compress / upload) -->
+      @if (isActive() || step() === 'done') {
+        <div class="img-preview__progress-wrap" [class.img-preview__progress-wrap--done]="step() === 'done'">
+          @if (step() === 'done') {
+            <!-- Success tick -->
+            <div class="upload-success" aria-live="polite">
+              <svg class="upload-success__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5"/>
+              </svg>
+              <span>Uploaded!</span>
+            </div>
+          } @else {
+            <div class="progress-bar-wrap" role="progressbar" [attr.aria-valuenow]="progressPct()" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar">
+                <div
+                  class="progress-bar__fill"
+                  [style.width.%]="progressPct()"
+                ></div>
+              </div>
+              <p class="progress-bar__label">{{ progressLabel() }}</p>
+            </div>
+          }
+        </div>
+      }
+
+    </div>
+
+    <!-- Preview footer: action buttons -->
+    @if (!isActive() && step() !== 'done') {
+      <div class="img-preview__footer">
+        <button
+          type="button"
+          class="img-action-btn img-action-btn--change"
+          (click)="fileInput.click()"
+          [disabled]="isActive()"
+          aria-label="Change cover image"
+        >
+          <svg class="img-action-btn__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+          </svg>
+          Change image
+        </button>
+        <button
+          type="button"
+          class="img-action-btn img-action-btn--remove"
+          (click)="removeImage()"
+          [disabled]="isActive()"
+          aria-label="Remove cover image"
+        >
+          <svg class="img-action-btn__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd"/>
+          </svg>
+          Remove
+        </button>
+      </div>
+    }
+  }
+
+  <!-- ── Empty / drop zone ─────────────────────────────────────────────────── -->
+  @if (!previewUrl()) {
+    <div
+      class="drop-zone"
+      [class.drop-zone--over]="isDragOver()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+      role="button"
+      tabindex="0"
+      aria-label="Upload cover image — drag and drop or click to browse"
+      (click)="fileInput.click()"
+      (keydown.enter)="fileInput.click()"
+      (keydown.space)="fileInput.click()"
+    >
+      <!-- Upload icon -->
+      <div class="drop-zone__icon" aria-hidden="true">
+        @if (isDragOver()) {
+          <!-- Drop arrow -->
+          <svg class="w-9 h-9" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M12 3v13.5m0 0l-4.5-4.5M12 16.5l4.5-4.5"/>
+          </svg>
+        } @else {
+          <!-- Upload arrow -->
+          <svg class="w-9 h-9" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+          </svg>
+        }
+      </div>
+
+      <p class="drop-zone__primary">
+        @if (isDragOver()) {
+          Drop to upload
+        } @else {
+          <span class="drop-zone__link">Click to browse</span>
+          &nbsp;or drag &amp; drop
+        }
+      </p>
+      <p class="drop-zone__hint">JPEG, PNG or WebP &nbsp;·&nbsp; max 5 MB</p>
+    </div>
+  }
+
+  <!-- ── Error message ─────────────────────────────────────────────────────── -->
+  @if (errorMessage()) {
+    <div class="img-upload__error" role="alert" aria-live="assertive">
+      <svg class="img-upload__error-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>
+      </svg>
+      {{ errorMessage() }}
+    </div>
+  }
+
+</div>

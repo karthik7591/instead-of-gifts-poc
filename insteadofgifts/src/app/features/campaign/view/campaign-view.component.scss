@@ -1,0 +1,385 @@
+// =============================================================================
+// CampaignViewComponent styles
+// =============================================================================
+
+:host { display: block; }
+
+// ── Thank-you toast ────────────────────────────────────────────────────────
+
+.thank-you-toast {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1.5rem;
+  background: #f0fdf4;       // green-50
+  border-bottom: 1px solid #86efac; // green-300
+  color: #166534;            // green-800
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: center;
+  animation: toast-in 300ms ease forwards;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Scaffolding ────────────────────────────────────────────────────────────
+
+.page-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 0;
+}
+
+.page-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  max-width: 36rem;
+  margin: 4rem auto;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: var(--color-error, #E53935);
+  font-size: 0.9375rem;
+}
+
+.campaign-page {
+  background-color: var(--color-pale-green, #EAF4DF);
+  min-height: 100vh;
+}
+
+.campaign-page__inner {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 1rem 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// ── Closed banner ──────────────────────────────────────────────────────────
+
+.closed-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #fef3c7;      // amber-100
+  border-bottom: 1px solid #fcd34d; // amber-300
+  color: #92400e;           // amber-800
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+// ── Cover image ────────────────────────────────────────────────────────────
+
+.cover-wrap {
+  width: 100%;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.cover-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+}
+
+.cover-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  background: linear-gradient(135deg, #d4edbe 0%, var(--color-pale-green, #EAF4DF) 100%);
+  border-radius: 0 0 12px 12px;
+}
+
+// ── Campaign header ────────────────────────────────────────────────────────
+
+.campaign-header {
+  padding-top: 0.5rem;
+}
+
+.campaign-title {
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 700;
+  color: var(--color-text-dark, #1E2D23);
+  line-height: var(--leading-tight, 1.25);
+}
+
+.campaign-description {
+  margin-top: 0.875rem;
+  font-size: 1rem;
+  line-height: var(--leading-relaxed, 1.625);
+  color: var(--color-text-mid, #3D5445);
+  white-space: pre-line;
+}
+
+// Pro custom message
+
+.custom-message {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--color-pro, #6B3FA0);
+  background: #f5f0fa;
+  border-radius: 0 var(--radius-md, 0.5rem) var(--radius-md, 0.5rem) 0;
+}
+
+.custom-message__icon { margin-top: 0.125rem; flex-shrink: 0; }
+
+.custom-message__text {
+  font-size: 1rem;
+  line-height: var(--leading-relaxed, 1.625);
+  color: var(--color-text-mid, #3D5445);
+  font-style: italic;
+  margin: 0;
+  white-space: pre-line;
+}
+
+// Meta row (organiser / deadline)
+
+.campaign-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.875rem;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6A8272);
+}
+
+// ── Progress card ──────────────────────────────────────────────────────────
+
+.progress-card {
+  background: #fff;
+  border: 1px solid #C8DAC2;
+  border-radius: 12px;
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(94,122,101,.12));
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.progress-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.progress-card__title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text-dark, #1E2D23);
+}
+
+.progress-card__count {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6A8272);
+}
+
+// Live badge
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-forest, #4A7255);
+}
+
+.live-badge__dot { position: relative; display: flex; width: 0.5rem; height: 0.5rem; }
+
+.live-badge__ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--color-brand-green, #95C476);
+  opacity: 0.75;
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.live-badge__core {
+  position: relative;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-brand-green, #95C476);
+}
+
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+// ── QR card ────────────────────────────────────────────────────────────────
+
+.qr-card {
+  background: #fff;
+  border: 1px solid #C8DAC2;
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.qr-card__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1.5rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+}
+
+.qr-card__text { flex: 1; min-width: 0; }
+
+.qr-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-dark, #1E2D23);
+  margin-bottom: 0.375rem;
+}
+
+.qr-card__url {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted, #6A8272);
+  word-break: break-all;
+  margin-bottom: 0.875rem;
+}
+
+.qr-card__actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.qr-card__qr {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.qr-label {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted, #6A8272);
+  text-align: center;
+}
+
+// ── Contributions list ─────────────────────────────────────────────────────
+
+.contributions-section {
+  background: #fff;
+  border: 1px solid #C8DAC2;
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+}
+
+.contributions-section__title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text-dark, #1E2D23);
+  margin-bottom: 1.25rem;
+}
+
+.contributions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contribution-item {
+  display: flex;
+  gap: 0.875rem;
+  align-items: flex-start;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f0f4ef;
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.contribution-item__avatar {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--color-pale-green, #EAF4DF);
+  border: 1px solid var(--color-mint, #C3DEA7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-forest, #4A7255);
+  user-select: none;
+}
+
+.contribution-item__body { flex: 1; min-width: 0; }
+
+.contribution-item__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.contribution-item__name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-dark, #1E2D23);
+}
+
+.contribution-item__amount {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-forest, #4A7255);
+  white-space: nowrap;
+}
+
+.contribution-item__message {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text-mid, #3D5445);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.contribution-item__time {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6A8272);
+}

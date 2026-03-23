@@ -1,0 +1,397 @@
+<div class="auth-page">
+
+  <!-- ══ HEADER ═══════════════════════════════════════════════════════════ -->
+  <header class="auth-header">
+    <a routerLink="/" class="auth-logo" aria-label="InsteadOfGifts home">
+      <!-- Gift-box icon -->
+      <svg class="auth-logo__icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="6" y="20" width="36" height="24" rx="3" fill="#C3DEA7" stroke="#4A7255" stroke-width="2"/>
+        <rect x="4" y="14" width="40" height="8" rx="2" fill="#95C476" stroke="#4A7255" stroke-width="2"/>
+        <path d="M24 14V44" stroke="#4A7255" stroke-width="2"/>
+        <path d="M24 14C24 14 18 8 14 10C10 12 12 18 16 18C20 18 24 14 24 14Z" fill="#EAF4DF" stroke="#4A7255" stroke-width="1.5"/>
+        <path d="M24 14C24 14 30 8 34 10C38 12 36 18 32 18C28 18 24 14 24 14Z" fill="#EAF4DF" stroke="#4A7255" stroke-width="1.5"/>
+      </svg>
+      <span class="auth-logo__wordmark">InsteadOfGifts</span>
+    </a>
+    <p class="auth-tagline">Give meaning, not things</p>
+  </header>
+
+  <!-- ══ CARD ══════════════════════════════════════════════════════════════ -->
+  <div class="auth-card" role="main">
+
+    <!-- ── LEFT PANEL: Log In / Forgot Password ──────────────────────────── -->
+    <section class="auth-panel" aria-labelledby="login-heading">
+
+      @if (leftMode() === 'login') {
+        <!-- ─── Log In ─────────────────────────────────────────────────── -->
+        <h2 id="login-heading" class="auth-panel__heading">Log In</h2>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onLogin()" novalidate class="auth-form">
+
+          <!-- Email -->
+          <div class="auth-field">
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a2 2 0 00-2 2v.01L10 11l9-4.99V6a2 2 0 00-2-2H3zm14 3.236l-7 3.888-7-3.888V14a2 2 0 002 2h10a2 2 0 002-2V7.236z"/></svg>
+              </span>
+              <input
+                id="login-email"
+                type="email"
+                class="auth-input"
+                [class.auth-input--error]="hasError(loginForm,'email','required') || hasError(loginForm,'email','email')"
+                formControlName="email"
+                placeholder="Email address"
+                autocomplete="email"
+                aria-label="Email address"
+              />
+            </div>
+            @if (hasError(loginForm, 'email', 'required')) {
+              <p class="field-err" role="alert">Email is required.</p>
+            } @else if (hasError(loginForm, 'email', 'email')) {
+              <p class="field-err" role="alert">Enter a valid email address.</p>
+            }
+          </div>
+
+          <!-- Password -->
+          <div class="auth-field">
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+              </span>
+              <input
+                id="login-password"
+                [type]="showLoginPw() ? 'text' : 'password'"
+                class="auth-input auth-input--pw"
+                [class.auth-input--error]="hasError(loginForm,'password','required')"
+                formControlName="password"
+                placeholder="Password"
+                autocomplete="current-password"
+                aria-label="Password"
+              />
+              <button
+                type="button"
+                class="pw-toggle"
+                [attr.aria-label]="showLoginPw() ? 'Hide password' : 'Show password'"
+                (click)="showLoginPw.set(!showLoginPw())"
+              >
+                @if (showLoginPw()) {
+                  <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd"/><path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z"/></svg>
+                } @else {
+                  <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
+                }
+              </button>
+            </div>
+            <div class="forgot-row">
+              <button type="button" class="forgot-link" (click)="leftMode.set('forgot')">
+                Forgot password?
+              </button>
+            </div>
+            @if (hasError(loginForm, 'password', 'required')) {
+              <p class="field-err" role="alert">Password is required.</p>
+            }
+          </div>
+
+          @if (loginError()) {
+            <div class="form-err-banner" role="alert">{{ loginError() }}</div>
+          }
+
+          <button
+            type="submit"
+            class="auth-btn auth-btn--primary"
+            [disabled]="loginLoading()"
+          >
+            @if (loginLoading()) {
+              <svg class="btn-spinner" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+              </svg>
+              Signing in…
+            } @else {
+              Log In
+            }
+          </button>
+
+        </form>
+
+      } @else {
+        <!-- ─── Forgot Password ─────────────────────────────────────────── -->
+        <button
+          type="button"
+          class="back-link"
+          (click)="leftMode.set('login'); resetSent.set(false); resetError.set(null)"
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 4.158a.75.75 0 11-1.06 1.06l-5.5-5.5a.75.75 0 010-1.06l5.5-5.5a.75.75 0 111.06 1.06L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/></svg>
+          Back to Log In
+        </button>
+
+        <h2 id="login-heading" class="auth-panel__heading">Reset Password</h2>
+
+        @if (resetSent()) {
+          <div class="confirm-box">
+            <div class="confirm-box__icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
+            </div>
+            <p class="confirm-box__heading">Check your inbox</p>
+            <p class="confirm-box__body">
+              A password reset link has been sent to
+              <strong>{{ forgotForm.controls.email.value }}</strong>.
+            </p>
+          </div>
+        } @else {
+          <p class="auth-hint">Enter your email address and we'll send you a link to reset your password.</p>
+
+          <form [formGroup]="forgotForm" (ngSubmit)="onResetPassword()" novalidate class="auth-form">
+            <div class="auth-field">
+              <div class="input-wrap">
+                <span class="input-icon" aria-hidden="true">
+                  <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a2 2 0 00-2 2v.01L10 11l9-4.99V6a2 2 0 00-2-2H3zm14 3.236l-7 3.888-7-3.888V14a2 2 0 002 2h10a2 2 0 002-2V7.236z"/></svg>
+                </span>
+                <input
+                  type="email"
+                  class="auth-input"
+                  [class.auth-input--error]="hasError(forgotForm,'email','required') || hasError(forgotForm,'email','email')"
+                  formControlName="email"
+                  placeholder="Email address"
+                  autocomplete="email"
+                  aria-label="Email address"
+                />
+              </div>
+              @if (hasError(forgotForm, 'email', 'required')) {
+                <p class="field-err" role="alert">Email is required.</p>
+              } @else if (hasError(forgotForm, 'email', 'email')) {
+                <p class="field-err" role="alert">Enter a valid email address.</p>
+              }
+            </div>
+
+            @if (resetError()) {
+              <div class="form-err-banner" role="alert">{{ resetError() }}</div>
+            }
+
+            <button type="submit" class="auth-btn auth-btn--primary" [disabled]="resetLoading()">
+              @if (resetLoading()) {
+                <svg class="btn-spinner" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                </svg>
+                Sending…
+              } @else {
+                Send reset link
+              }
+            </button>
+          </form>
+        }
+      }
+
+    </section><!-- /left panel -->
+
+    <!-- ── DIVIDER ─────────────────────────────────────────────────────────── -->
+    <div class="auth-divider" role="separator">
+      <span class="auth-divider__label">or</span>
+    </div>
+
+    <!-- ── RIGHT PANEL: Sign Up ───────────────────────────────────────────── -->
+    <section class="auth-panel" aria-labelledby="signup-heading">
+      <h2 id="signup-heading" class="auth-panel__heading">Sign Up</h2>
+
+      @if (signUpConfirmPending()) {
+        <!-- Awaiting email confirmation -->
+        <div class="confirm-box">
+          <div class="confirm-box__icon confirm-box__icon--mail" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a2 2 0 00-2 2v.01L10 11l9-4.99V6a2 2 0 00-2-2H3zm14 3.236l-7 3.888-7-3.888V14a2 2 0 002 2h10a2 2 0 002-2V7.236z"/></svg>
+          </div>
+          <p class="confirm-box__heading">Check your inbox</p>
+          <p class="confirm-box__body">
+            A verification link has been sent to
+            <strong>{{ signUpForm.controls.email.value }}</strong>.<br>
+            Click the link to activate your account.
+          </p>
+          <button
+            type="button"
+            class="auth-btn auth-btn--ghost"
+            (click)="signUpConfirmPending.set(false)"
+          >
+            Use a different email
+          </button>
+        </div>
+
+      } @else {
+        <!-- OAuth buttons -->
+        <div class="oauth-group">
+          <button
+            type="button"
+            class="auth-btn auth-btn--oauth"
+            [disabled]="oauthLoading() !== null"
+            (click)="onLoginWithGoogle()"
+            aria-label="Continue with Google"
+          >
+            @if (oauthLoading() === 'google') {
+              <svg class="btn-spinner" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+              </svg>
+              Connecting…
+            } @else {
+              <!-- Google "G" SVG -->
+              <svg class="oauth-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Continue with Google
+            }
+          </button>
+
+          <button
+            type="button"
+            class="auth-btn auth-btn--oauth auth-btn--apple"
+            [disabled]="oauthLoading() !== null"
+            (click)="onLoginWithApple()"
+            aria-label="Continue with Apple"
+          >
+            @if (oauthLoading() === 'apple') {
+              <svg class="btn-spinner" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+              </svg>
+              Connecting…
+            } @else {
+              <!-- Apple icon -->
+              <svg class="oauth-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.4.07 2.38.74 3.2.8 1.2-.24 2.35-.92 3.65-.84 1.55.12 2.72.72 3.47 1.86-3.18 1.94-2.43 5.78.37 6.9-.65 1.66-1.48 3.3-2.69 4.16zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+              </svg>
+              Continue with Apple
+            }
+          </button>
+        </div>
+
+        <!-- Inner divider: "or sign up with email" -->
+        <div class="inner-divider">
+          <span class="inner-divider__label">or sign up with email</span>
+        </div>
+
+        @if (signUpError()) {
+          <div class="form-err-banner" role="alert">{{ signUpError() }}</div>
+        }
+
+        <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()" novalidate class="auth-form">
+
+          <!-- Email -->
+          <div class="auth-field">
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a2 2 0 00-2 2v.01L10 11l9-4.99V6a2 2 0 00-2-2H3zm14 3.236l-7 3.888-7-3.888V14a2 2 0 002 2h10a2 2 0 002-2V7.236z"/></svg>
+              </span>
+              <input
+                type="email"
+                class="auth-input"
+                [class.auth-input--error]="hasError(signUpForm,'email','required') || hasError(signUpForm,'email','email')"
+                formControlName="email"
+                placeholder="Email address"
+                autocomplete="email"
+                aria-label="Email address"
+              />
+            </div>
+            @if (hasError(signUpForm, 'email', 'required')) {
+              <p class="field-err" role="alert">Email is required.</p>
+            } @else if (hasError(signUpForm, 'email', 'email')) {
+              <p class="field-err" role="alert">Enter a valid email address.</p>
+            }
+          </div>
+
+          <!-- Password -->
+          <div class="auth-field">
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+              </span>
+              <input
+                [type]="showSignUpPw() ? 'text' : 'password'"
+                class="auth-input auth-input--pw"
+                [class.auth-input--error]="hasError(signUpForm,'password','required') || hasError(signUpForm,'password','minlength')"
+                formControlName="password"
+                placeholder="Password"
+                autocomplete="new-password"
+                aria-label="Password"
+              />
+              <button type="button" class="pw-toggle" [attr.aria-label]="showSignUpPw() ? 'Hide password' : 'Show password'" (click)="showSignUpPw.set(!showSignUpPw())">
+                @if (showSignUpPw()) {
+                  <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd"/><path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z"/></svg>
+                } @else {
+                  <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
+                }
+              </button>
+            </div>
+            @if (hasError(signUpForm, 'password', 'required')) {
+              <p class="field-err" role="alert">Password is required.</p>
+            } @else if (hasError(signUpForm, 'password', 'minlength')) {
+              <p class="field-err" role="alert">Password must be at least 8 characters.</p>
+            }
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="auth-field">
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+              </span>
+              <input
+                [type]="showConfirmPw() ? 'text' : 'password'"
+                class="auth-input auth-input--pw"
+                [class.auth-input--error]="hasError(signUpForm,'confirmPassword','required') || hasGroupError(signUpForm,'passwordMismatch')"
+                formControlName="confirmPassword"
+                placeholder="Confirm password"
+                autocomplete="new-password"
+                aria-label="Confirm password"
+              />
+              <button type="button" class="pw-toggle" [attr.aria-label]="showConfirmPw() ? 'Hide password' : 'Show password'" (click)="showConfirmPw.set(!showConfirmPw())">
+                @if (showConfirmPw()) {
+                  <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd"/><path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z"/></svg>
+                } @else {
+                  <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
+                }
+              </button>
+            </div>
+            @if (hasError(signUpForm, 'confirmPassword', 'required')) {
+              <p class="field-err" role="alert">Please confirm your password.</p>
+            } @else if (hasGroupError(signUpForm, 'passwordMismatch') && signUpForm.controls.confirmPassword.touched) {
+              <p class="field-err" role="alert">Passwords do not match.</p>
+            }
+          </div>
+
+          <button
+            type="submit"
+            class="auth-btn auth-btn--primary"
+            [disabled]="signUpLoading()"
+          >
+            @if (signUpLoading()) {
+              <svg class="btn-spinner" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+              </svg>
+              Creating account…
+            } @else {
+              Sign Up
+            }
+          </button>
+
+        </form>
+      }
+
+    </section><!-- /right panel -->
+
+  </div><!-- /auth-card -->
+
+  <!-- ══ FOOTER ═════════════════════════════════════════════════════════════ -->
+  <footer class="auth-footer">
+    <p class="auth-footer__copy">© 2024 InsteadOfGifts. All rights reserved.</p>
+    <nav class="auth-footer__links" aria-label="Footer">
+      <a routerLink="/privacy">Privacy Policy</a>
+      <span aria-hidden="true">·</span>
+      <a routerLink="/terms">Terms of Service</a>
+      <span aria-hidden="true">·</span>
+      <a routerLink="/contact">Contact Us</a>
+    </nav>
+  </footer>
+
+</div>

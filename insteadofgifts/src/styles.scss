@@ -1,0 +1,45 @@
+// Design tokens must come before Tailwind so custom properties are available
+// inside Tailwind's base layer and any component overrides.
+@use 'styles/tokens';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// ── Accessibility: focus-visible ring (WCAG 2.1 AA — 2.4.7) ──────────────────
+// 2px brand-green outline with 2px offset on all interactive elements.
+// ButtonComponent handles its own ring via Tailwind focus-visible utilities.
+// This covers all other interactive elements: links, custom role="button" divs,
+// elements with tabindex, and native form controls not managed by ButtonComponent.
+
+a:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible,
+summary:focus-visible,
+button:not([class*="focus-visible"]):focus-visible {
+  outline: 2px solid var(--color-brand-green, #95C476);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 0.25rem);
+}
+
+// Form controls: use forest (darker) for legibility against white/pale inputs.
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-forest, #4A7255);
+  outline-offset: 0;
+}
+
+// Utility: visually-hidden but accessible to screen readers.
+// Used for aria-live regions and skip links.
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

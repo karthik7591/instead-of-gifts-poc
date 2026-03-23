@@ -1,0 +1,64 @@
+<div class="qr-root">
+
+  <!-- ── Canvas wrapper (always rendered; blurred when locked) ─────────────── -->
+  <div
+    class="qr-canvas-wrap"
+    [class.qr-canvas-wrap--locked]="!isPro()"
+    [style.width.px]="size()"
+    [style.height.px]="size()"
+  >
+    <canvas
+      #qrCanvas
+      class="qr-canvas"
+      role="img"
+      [attr.aria-label]="isPro()
+        ? 'QR code — scan to open ' + url()
+        : 'QR code (locked — Pro feature)'"
+    ></canvas>
+
+    <!-- ── Pro lock overlay ───────────────────────────────────────────────── -->
+    @if (!isPro()) {
+      <div class="qr-overlay" aria-label="QR code locked — upgrade to Pro to unlock">
+
+        <div class="qr-overlay__icon" aria-hidden="true">
+          <!-- Lock icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+        </div>
+
+        <p class="qr-overlay__label">QR codes are a<br><strong>Pro feature</strong></p>
+
+        <a
+          class="qr-overlay__cta"
+          [routerLink]="['/pro', 'upgrade']"
+          aria-label="Upgrade to Pro to unlock QR codes"
+        >
+          <svg class="qr-overlay__cta-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.83-4.401z" clip-rule="evenodd"/>
+          </svg>
+          Upgrade to Pro
+        </a>
+
+      </div>
+    }
+  </div>
+
+  <!-- ── Download button (Pro only, unless suppressed by showDownload=false) ── -->
+  @if (isPro() && showDownload()) {
+    <button
+      class="qr-download-btn"
+      type="button"
+      (click)="downloadQr()"
+      aria-label="Download QR code as PNG"
+    >
+      <svg class="qr-download-btn__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z"/>
+        <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+      </svg>
+      Download QR
+    </button>
+  }
+
+</div>

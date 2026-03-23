@@ -1,0 +1,221 @@
+<div class="home-page">
+
+  <!-- ══ HERO ════════════════════════════════════════════════════════════════ -->
+  <section class="hero" aria-label="Hero">
+    <div class="hero__inner">
+
+      <p class="hero__eyebrow">
+        <ng-icon name="lucideHeart" size="14" aria-hidden="true" />
+        A better way to give
+      </p>
+
+      <h1 class="hero__heading">
+        Ask for contributions,<br class="hidden sm:block">
+        not clutter.
+      </h1>
+
+      <p class="hero__sub">
+        Create a gift campaign in minutes. Share the link with friends and family.
+        Let them contribute to something that actually matters — no wrapping paper required.
+      </p>
+
+      <div class="hero__ctas">
+        <app-button
+          variant="primary"
+          size="lg"
+          [routerLink]="['/campaigns', 'new']"
+        >
+          <ng-icon name="lucidePencilLine" size="18" aria-hidden="true" />
+          Create a campaign
+        </app-button>
+
+        <a href="#how-it-works" class="hero__link-cta">
+          See how it works
+          <ng-icon name="lucideChevronDown" size="16" aria-hidden="true" />
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Wave separator -->
+    <div class="hero__wave" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 72" preserveAspectRatio="none">
+        <path fill="#EAF4DF" d="M0,36 C240,72 480,0 720,36 C960,72 1200,0 1440,36 L1440,72 L0,72 Z"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ══ HOW IT WORKS ═════════════════════════════════════════════════════════ -->
+  @defer (on idle) {
+    <section id="how-it-works" class="steps-section" aria-labelledby="steps-heading">
+      <div class="section-inner">
+
+        <h2 class="section-heading" id="steps-heading">How it works</h2>
+        <p class="section-sub">Three simple steps to the perfect group gift.</p>
+
+        <div class="steps-grid">
+          @for (step of steps; track step.step) {
+            <div class="step-card">
+              <div class="step-card__icon-wrap" aria-hidden="true">
+                <ng-icon [name]="step.icon" size="26" />
+              </div>
+              <p class="step-card__number">Step {{ step.step }}</p>
+              <h3 class="step-card__title">{{ step.title }}</h3>
+              <p class="step-card__body">{{ step.body }}</p>
+            </div>
+          }
+        </div>
+
+      </div>
+    </section>
+  } @placeholder {
+    <div id="how-it-works" class="steps-section--placeholder" aria-hidden="true"></div>
+  }
+
+  <!-- ══ PRICING ══════════════════════════════════════════════════════════════ -->
+  @defer (on viewport) {
+    <section class="pricing-section" aria-labelledby="pricing-heading">
+      <div class="section-inner">
+
+        <h2 class="section-heading" id="pricing-heading">Simple, honest pricing</h2>
+        <p class="section-sub">Start for free. Upgrade to Pro when you need more.</p>
+
+        <div class="pricing-grid">
+
+          <!-- Free plan -->
+          <div class="plan-card">
+            <div class="plan-card__header">
+              <h3 class="plan-card__name">Free</h3>
+              <div class="plan-card__price">
+                <span class="plan-card__amount">$0</span>
+                <span class="plan-card__period">forever</span>
+              </div>
+              <p class="plan-card__tagline">Everything you need to get started.</p>
+            </div>
+
+            <ul class="plan-card__features" role="list">
+              @for (f of pricingFeatures; track f.label) {
+                <li class="plan-feature" [class.plan-feature--excluded]="!freeIncluded(f)">
+                  <ng-icon
+                    [name]="freeIncluded(f) ? 'lucideCheck' : 'lucideX'"
+                    size="15"
+                    aria-hidden="true"
+                    class="plan-feature__icon"
+                    [class.plan-feature__icon--yes]="freeIncluded(f)"
+                    [class.plan-feature__icon--no]="!freeIncluded(f)"
+                  />
+                  <span>{{ freeLabel(f) }}</span>
+                </li>
+              }
+            </ul>
+
+            <div class="plan-card__cta">
+              <app-button
+                variant="secondary"
+                size="md"
+                [fullWidth]="true"
+                [routerLink]="['/campaigns', 'new']"
+              >
+                Get started free
+              </app-button>
+            </div>
+          </div>
+
+          <!-- Pro plan -->
+          <div class="plan-card plan-card--pro">
+            <div class="plan-card__badge">Most popular</div>
+
+            <div class="plan-card__header">
+              <h3 class="plan-card__name">Pro</h3>
+              <div class="plan-card__price">
+                <span class="plan-card__amount">$9.99</span>
+                <span class="plan-card__period">/ month</span>
+              </div>
+              <p class="plan-card__tagline">Unlock the full experience.</p>
+            </div>
+
+            <ul class="plan-card__features" role="list">
+              @for (f of pricingFeatures; track f.label) {
+                <li class="plan-feature plan-feature--pro">
+                  <ng-icon
+                    name="lucideCheck"
+                    size="15"
+                    aria-hidden="true"
+                    class="plan-feature__icon plan-feature__icon--yes"
+                  />
+                  <span>{{ proLabel(f) }}</span>
+                </li>
+              }
+            </ul>
+
+            <div class="plan-card__cta">
+              <app-button
+                variant="pro"
+                size="md"
+                [fullWidth]="true"
+                [routerLink]="['/pro', 'upgrade']"
+              >
+                <ng-icon name="lucideStar" size="16" aria-hidden="true" />
+                Upgrade to Pro
+              </app-button>
+            </div>
+          </div>
+
+        </div><!-- /pricing-grid -->
+      </div>
+    </section>
+  } @placeholder {
+    <div class="pricing-section--placeholder" aria-hidden="true"></div>
+  }
+
+  <!-- ══ SOCIAL PROOF ═════════════════════════════════════════════════════════ -->
+  @defer (on viewport) {
+    <section class="proof-section" aria-labelledby="proof-heading">
+      <div class="section-inner">
+
+        <h2 class="section-heading" id="proof-heading">Trusted by gift-givers everywhere</h2>
+        <p class="section-sub">
+          Join thousands of families, friends, and colleagues who've ditched the guesswork.
+        </p>
+
+        <div class="proof-stats">
+          @for (stat of stats; track stat.label) {
+            <div class="proof-stat">
+              <p class="proof-stat__value">{{ stat.value }}</p>
+              <p class="proof-stat__label">{{ stat.label }}</p>
+            </div>
+          }
+        </div>
+
+      </div>
+    </section>
+  } @placeholder {
+    <div class="proof-section--placeholder" aria-hidden="true"></div>
+  }
+
+  <!-- ══ FOOTER ═══════════════════════════════════════════════════════════════ -->
+  @defer (on viewport) {
+    <footer class="home-footer" role="contentinfo">
+      <div class="home-footer__inner">
+
+        <p class="home-footer__logo">
+          <span class="home-footer__logo-accent">Instead</span>OfGifts
+        </p>
+        <p class="home-footer__tagline">"Give meaning, not things."</p>
+
+        <nav class="home-footer__nav" aria-label="Footer navigation">
+          <a [routerLink]="['/']" class="home-footer__link">Home</a>
+          <a [routerLink]="['/campaigns', 'new']" class="home-footer__link">Start a campaign</a>
+          <a [routerLink]="['/dashboard']" class="home-footer__link">Dashboard</a>
+          <a [routerLink]="['/pro', 'upgrade']" class="home-footer__link">Pro</a>
+        </nav>
+
+        <p class="home-footer__copy">© {{ year }} InsteadOfGifts. All rights reserved.</p>
+
+      </div>
+    </footer>
+  } @placeholder {
+    <div class="home-footer--placeholder" aria-hidden="true"></div>
+  }
+
+</div>

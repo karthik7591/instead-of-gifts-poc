@@ -1,0 +1,240 @@
+<!-- ── Loading ─────────────────────────────────────────────────────────────── -->
+@if (loading()) {
+  <div class="page-loader" aria-label="Loading campaign…">
+    <svg class="animate-spin w-9 h-9 text-brand-green" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path  class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+    </svg>
+  </div>
+}
+
+<!-- ── Error ───────────────────────────────────────────────────────────────── -->
+@if (error()) {
+  <div class="page-error" role="alert">
+    <svg class="w-5 h-5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-9.25a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0v-3zm.75 5.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+    </svg>
+    {{ error() }}
+  </div>
+}
+
+<!-- ── Campaign page ───────────────────────────────────────────────────────── -->
+@if (liveCampaign(); as c) {
+  <div class="campaign-page">
+
+    <!-- ══ THANK-YOU TOAST ══════════════════════════════════════════════════ -->
+    @if (showThankYou()) {
+      <div class="thank-you-toast" role="status" aria-live="polite">
+        <svg class="w-5 h-5 shrink-0 text-success" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+        </svg>
+        <span>Thank you for your contribution! 🎉 It will appear below shortly.</span>
+      </div>
+    }
+
+    <!-- ══ CLOSED BANNER ═══════════════════════════════════════════════════ -->
+    @if (isClosed()) {
+      <div class="closed-banner" role="status">
+        <svg class="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-9.25a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0v-3zm.75 5.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+        </svg>
+        This campaign has ended. Thank you to everyone who contributed!
+      </div>
+    }
+
+    <div class="campaign-page__inner">
+
+      <!-- ══ COVER IMAGE ════════════════════════════════════════════════════ -->
+      @if (c.isPro && c.coverImageUrl) {
+        <div class="cover-wrap">
+          <img
+            [ngSrc]="c.coverImageUrl"
+            [alt]="c.title"
+            class="cover-img"
+            width="1200"
+            height="525"
+            priority
+          />
+        </div>
+      } @else {
+        <div class="cover-placeholder">
+          <svg class="w-14 h-14 text-mint" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          @if (!c.isPro) {
+            <p class="mt-2 text-xs text-text-muted font-medium">Cover images available on Pro</p>
+          }
+        </div>
+      }
+
+      <!-- ══ TITLE + MESSAGING ══════════════════════════════════════════════ -->
+      <div class="campaign-header">
+        <h1 class="campaign-title">{{ c.title }}</h1>
+
+        @if (c.isPro && c.customMessage) {
+          <!-- Pro: organiser's personal message -->
+          <div class="custom-message">
+            <div class="custom-message__icon" aria-hidden="true">
+              <svg class="w-4 h-4 text-pro" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 1l2.163 4.279L15 6.09l-3.5 3.326.826 4.693L8 11.75l-4.326 2.359.826-4.693L1 6.09l4.837-.811L8 1z"/>
+              </svg>
+            </div>
+            <blockquote class="custom-message__text">{{ c.customMessage }}</blockquote>
+          </div>
+        } @else {
+          <!-- Free: standard description -->
+          @if (c.description) {
+            <p class="campaign-description">{{ c.description }}</p>
+          }
+        }
+
+        <!-- Organiser + deadline meta -->
+        <div class="campaign-meta">
+          <span class="meta-item">
+            <svg class="w-4 h-4 text-text-muted" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd"/>
+            </svg>
+            {{ c.organiserName }}
+          </span>
+          @if (c.endsAt) {
+            <span class="meta-item">
+              <svg class="w-4 h-4 text-text-muted" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z" clip-rule="evenodd"/>
+              </svg>
+              Ends {{ c.endsAt | date:'d MMM y' }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- ══ PROGRESS CARD ══════════════════════════════════════════════════ -->
+      <div class="progress-card">
+        <div class="progress-card__header">
+          <h2 class="progress-card__title">Contributions</h2>
+          @if (!isClosed()) {
+            <span class="live-badge" aria-label="Live updates active">
+              <span class="live-badge__dot">
+                <span class="live-badge__ping"></span>
+                <span class="live-badge__core"></span>
+              </span>
+              Live
+            </span>
+          }
+        </div>
+
+        <app-progress-bar
+          [current]="totals().totalPence"
+          [target]="c.targetAmount"
+          [currency]="c.currency"
+          [showLabel]="true"
+        />
+
+        <p class="progress-card__count">
+          {{ totals().count }}
+          {{ totals().count === 1 ? 'contribution' : 'contributions' }} received
+        </p>
+      </div>
+
+      <!-- ══ CONTRIBUTE CTA ═════════════════════════════════════════════════ -->
+      @if (!isClosed()) {
+        <app-button
+          variant="primary"
+          size="lg"
+          [fullWidth]="true"
+          [routerLink]="['/contribute', c.slug]"
+        >
+          <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.09C4.045 12.38 2.5 10.507 2.5 8.25a4.75 4.75 0 017.384-3.95 4.75 4.75 0 017.616 3.95c0 2.257-1.545 4.13-3.385 5.88a22.049 22.049 0 01-2.582 2.09 20.884 20.884 0 01-1.162.682l-.019.01-.005.003h-.002a.739.739 0 01-.69.001l-.002-.001z"/>
+          </svg>
+          Contribute to this campaign
+        </app-button>
+      }
+
+      <!-- ══ QR CODE + SHARE (always shown; locked overlay for Free) ══════════ -->
+      <div class="qr-card">
+        <div class="qr-card__body">
+
+          <div class="qr-card__text">
+            <h3 class="qr-card__title">Share this campaign</h3>
+            <p class="qr-card__url">{{ campaignUrl() }}</p>
+            <div class="qr-card__actions">
+              <app-button
+                variant="secondary"
+                size="sm"
+                type="button"
+                (clicked)="copyLink()"
+              >
+                @if (copySuccess()) {
+                  <svg class="w-4 h-4 text-success" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+                  </svg>
+                  Copied!
+                } @else {
+                  <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M7 3.5A1.5 1.5 0 018.5 2h3.879a1.5 1.5 0 011.06.44l3.122 3.12A1.5 1.5 0 0117 6.622V12.5a1.5 1.5 0 01-1.5 1.5h-1v-3.379a3 3 0 00-.879-2.121L10.5 5.379A3 3 0 008.379 4.5H7v-1z"/>
+                    <path d="M4.5 6A1.5 1.5 0 003 7.5v9A1.5 1.5 0 004.5 18h7a1.5 1.5 0 001.5-1.5v-5.879a1.5 1.5 0 00-.44-1.06L9.44 6.439A1.5 1.5 0 008.378 6H4.5z"/>
+                  </svg>
+                  Copy link
+                }
+              </app-button>
+            </div>
+          </div>
+
+          <div class="qr-card__qr">
+            <app-qr-code
+              [url]="campaignUrl()"
+              [isPro]="c.isPro"
+              [size]="180"
+              [filename]="c.slug"
+            />
+            @if (c.isPro) {
+              <p class="qr-label">Scan to contribute</p>
+            }
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ RECENT CONTRIBUTIONS ═══════════════════════════════════════════ -->
+      @if (contributions().length > 0) {
+        <div class="contributions-section">
+          <h3 class="contributions-section__title">Recent contributions</h3>
+
+          <ul class="contributions-list" role="list">
+            @for (contrib of contributions(); track contrib.id) {
+              <li class="contribution-item">
+
+                <!-- Avatar -->
+                <div class="contribution-item__avatar" aria-hidden="true">
+                  {{ (contrib.contributorName ?? '?').charAt(0).toUpperCase() }}
+                </div>
+
+                <!-- Details -->
+                <div class="contribution-item__body">
+                  <div class="contribution-item__header">
+                    <span class="contribution-item__name">
+                      {{ contrib.contributorName ?? 'Someone' }}
+                    </span>
+                    <span class="contribution-item__amount">
+                      {{ formatAmount(contrib.amount, c.currency) }}
+                    </span>
+                  </div>
+                  @if (contrib.message) {
+                    <p class="contribution-item__message">"{{ contrib.message }}"</p>
+                  }
+                  <time
+                    class="contribution-item__time"
+                    [attr.datetime]="contrib.createdAt"
+                  >{{ contrib.createdAt | date:'d MMM y, HH:mm' }}</time>
+                </div>
+
+              </li>
+            }
+          </ul>
+        </div>
+      }
+
+    </div><!-- /.campaign-page__inner -->
+  </div><!-- /.campaign-page -->
+}

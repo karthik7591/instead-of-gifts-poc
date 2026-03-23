@@ -1,0 +1,62 @@
+# Supabase project configuration
+# Reference: https://supabase.com/docs/guides/cli/config
+
+[api]
+# Port used by the local API server (supabase start)
+port = 54321
+# Schemas exposed via the REST and GraphQL API
+schemas = ["public", "storage", "graphql_public"]
+# Allow anonymous access for unauthenticated clients
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+port = 54323
+api_url = "http://localhost"
+
+[inbucket]
+# Local email testing server
+port = 54324
+smtp_port = 54325
+pop3_port = 54326
+
+[storage]
+file_size_limit = "50MiB"
+
+[auth]
+site_url = "http://localhost:4200"
+additional_redirect_urls = ["https://localhost:4200"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+# ---------------------------------------------------------------------------
+# Edge Function configuration
+# ---------------------------------------------------------------------------
+
+# create-checkout-session: public endpoint — no user JWT required.
+# Security is enforced by validating the campaign exists/is-active and by
+# Stripe's own payment flow. The anon key is still accepted if passed.
+[functions.create-checkout-session]
+verify_jwt = false
+
+# stripe-subscription: called by authenticated users to start a Pro subscription.
+# JWT verification is enabled (default). The function reads the JWT to identify
+# the user and creates/reuses their Stripe customer record.
+[functions.stripe-subscription]
+verify_jwt = true
+
+# stripe-webhook: called by Stripe, not by users. Stripe signs requests with
+# STRIPE_WEBHOOK_SECRET which we verify inside the function.
+[functions.stripe-webhook]
+verify_jwt = false

@@ -1,0 +1,158 @@
+// =============================================================================
+// QrCodeComponent styles
+// =============================================================================
+
+:host {
+  display: inline-block;  // shrink-wraps to content width
+}
+
+// ── Root ──────────────────────────────────────────────────────────────────────
+
+.qr-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+// ── Canvas wrapper ────────────────────────────────────────────────────────────
+
+.qr-canvas-wrap {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  // Tight border so the white canvas sits cleanly on any background
+  border: 1.5px solid #D1D9CE;
+  box-shadow: 0 2px 8px rgba(74, 114, 85, 0.12);
+  // Size is set inline via [style.width/height.px]="size()"
+  // The canvas fills 100% of the wrapper
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // ── Locked state: blur the canvas beneath the overlay ──────────────────
+  &--locked {
+    .qr-canvas {
+      filter: blur(6px);
+      // Prevent the blurred image from being tab-focused or screen-reader-read
+      pointer-events: none;
+      user-select: none;
+      // Scale very slightly to hide the hard blur edge at the border
+      transform: scale(1.04);
+    }
+  }
+}
+
+// ── Canvas element ────────────────────────────────────────────────────────────
+
+.qr-canvas {
+  display: block;
+  width: 100% !important;    // override qrcode lib inline width
+  height: 100% !important;   // override qrcode lib inline height
+  border-radius: 8px;
+}
+
+// ── Pro lock overlay ──────────────────────────────────────────────────────────
+
+.qr-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  // Frosted-glass feel — semi-transparent white + backdrop blur
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  text-align: center;
+}
+
+.qr-overlay__icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--color-pale-green, #EAF4DF);
+  border: 1.5px solid var(--color-mint, #C3DEA7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-forest, #4A7255);
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.qr-overlay__label {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--color-text-dark, #1E2D23);
+
+  strong { font-weight: 700; }
+}
+
+.qr-overlay__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  background: var(--color-brand-green, #95C476);
+  color: var(--color-text-dark, #1E2D23);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.3125rem 0.625rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 150ms ease;
+
+  &:hover { background: #aad48a; }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-forest, #4A7255);
+    outline-offset: 2px;
+  }
+}
+
+.qr-overlay__cta-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+}
+
+// ── Download button ───────────────────────────────────────────────────────────
+
+.qr-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4375rem 0.875rem;
+  border: 1.5px solid var(--color-mint, #C3DEA7);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-forest, #4A7255);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--color-pale-green, #EAF4DF);
+    border-color: var(--color-brand-green, #95C476);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-forest, #4A7255);
+    outline-offset: 2px;
+  }
+}
+
+.qr-download-btn__icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}

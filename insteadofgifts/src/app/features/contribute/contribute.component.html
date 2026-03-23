@@ -1,0 +1,248 @@
+<div class="contribute-page">
+
+  <!-- ── Loading ────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="contribute-page__loader" aria-label="Loading…">
+      <svg class="animate-spin w-8 h-8 text-brand-green" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+        <path  class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+      </svg>
+    </div>
+  }
+
+  <!-- ── Load error ─────────────────────────────────────────────────────── -->
+  @if (loadError()) {
+    <div class="contribute-page__inner">
+      <div class="status-banner status-banner--error" role="alert">
+        <svg class="w-5 h-5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-9.25a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0v-3zm.75 5.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+        </svg>
+        {{ loadError() }}
+      </div>
+      <app-button variant="ghost" size="md" routerLink="/" class="mt-4">← Back to home</app-button>
+    </div>
+  }
+
+  <!-- ── Contribute form ────────────────────────────────────────────────── -->
+  @if (!loading() && !loadError() && campaign(); as c) {
+    <div class="contribute-page__inner">
+
+      <!-- Back link -->
+      <a [routerLink]="['/campaigns', c.slug]" class="contribute-page__back">
+        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 4.158a.75.75 0 11-1.06 1.06l-5.5-5.5a.75.75 0 010-1.06l5.5-5.5a.75.75 0 111.06 1.06L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/>
+        </svg>
+        {{ c.title }}
+      </a>
+
+      <!-- ── Cancellation notice ──────────────────────────────────────── -->
+      @if (wasCancelled()) {
+        <div class="status-banner status-banner--warning" role="status">
+          <svg class="w-5 h-5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+          </svg>
+          Payment was cancelled. You can try again below.
+        </div>
+      }
+
+      <!-- ── Card ────────────────────────────────────────────────────── -->
+      <div class="contribute-card">
+
+        <!-- Header -->
+        <div class="contribute-card__header">
+          <div class="contribute-card__icon" aria-hidden="true">
+            <svg class="w-6 h-6 text-forest" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.09C4.045 12.38 2.5 10.507 2.5 8.25a4.75 4.75 0 017.384-3.95 4.75 4.75 0 017.616 3.95c0 2.257-1.545 4.13-3.385 5.88a22.049 22.049 0 01-2.582 2.09 20.884 20.884 0 01-1.162.682l-.019.01-.005.003h-.002a.739.739 0 01-.69.001l-.002-.001z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="contribute-card__title">Make a contribution</h1>
+            <p class="contribute-card__subtitle">Supporting <strong>{{ c.title }}</strong></p>
+          </div>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" [formGroup]="form" novalidate>
+
+          <!-- ════════════════════════════════════════════════════════════
+               SECTION 1 — Amount
+          ════════════════════════════════════════════════════════════ -->
+          <div class="form-section">
+            <h2 class="form-section__title">Choose an amount</h2>
+
+            <!-- Preset pills -->
+            <div class="amount-pills" role="group" aria-label="Suggested amounts">
+              @for (preset of presets; track preset) {
+                <button
+                  type="button"
+                  class="amount-pill"
+                  [class.amount-pill--selected]="selectedPreset() === preset"
+                  (click)="selectPreset(preset)"
+                  [attr.aria-pressed]="selectedPreset() === preset"
+                >
+                  ${{ preset }}
+                </button>
+              }
+            </div>
+
+            <!-- Custom amount -->
+            <div class="custom-amount-wrap">
+              <span class="custom-amount__symbol" aria-hidden="true">$</span>
+              <input
+                id="customAmount"
+                type="number"
+                inputmode="decimal"
+                min="1"
+                step="any"
+                placeholder="Other amount"
+                class="custom-amount__input"
+                [class.custom-amount__input--selected]="selectedPreset() === 'custom'"
+                [class.custom-amount__input--error]="amountTouched() && !amountValid() && selectedPreset() === 'custom'"
+                [attr.aria-invalid]="(amountTouched() && !amountValid()) || null"
+                aria-label="Custom amount in dollars"
+                aria-describedby="amount-error"
+                [value]="customAmountRaw()"
+                (input)="onCustomInput($event)"
+                (focus)="onCustomFocus()"
+              />
+            </div>
+
+            <!-- Amount validation message -->
+            <div id="amount-error" aria-live="polite">
+              @if (amountTouched() && !amountValid()) {
+                <p class="field-error" role="alert">Please enter an amount of at least $1.</p>
+              }
+            </div>
+          </div>
+
+          <hr class="form-divider" />
+
+          <!-- ════════════════════════════════════════════════════════════
+               SECTION 2 — Contributor details
+          ════════════════════════════════════════════════════════════ -->
+          <div class="form-section">
+            <h2 class="form-section__title">Your details</h2>
+
+            <!-- Name -->
+            <div class="field">
+              <label for="name" class="field__label">
+                Your name <span class="field__optional">(optional)</span>
+              </label>
+              <input
+                id="name"
+                type="text"
+                formControlName="name"
+                placeholder="e.g. James Smith"
+                class="field__input"
+                autocomplete="name"
+                [disabled]="form.controls.isAnonymous.value"
+              />
+              <p class="field__hint">Leave blank to contribute as Anonymous.</p>
+            </div>
+
+            <!-- Anonymous toggle -->
+            <label class="toggle-row">
+              <div class="toggle-row__text">
+                <span class="toggle-row__label">Contribute anonymously</span>
+                <span class="toggle-row__desc">Your name will not appear on the campaign page.</span>
+              </div>
+              <div class="toggle-wrap">
+                <input
+                  type="checkbox"
+                  formControlName="isAnonymous"
+                  class="sr-only"
+                  id="isAnonymous"
+                  role="switch"
+                  [attr.aria-checked]="form.controls.isAnonymous.value"
+                />
+                <div
+                  class="toggle"
+                  [class.toggle--on]="form.controls.isAnonymous.value"
+                  (click)="form.controls.isAnonymous.setValue(!form.controls.isAnonymous.value)"
+                  aria-hidden="true"
+                >
+                  <div class="toggle__thumb"></div>
+                </div>
+              </div>
+            </label>
+
+            <!-- Message -->
+            <div class="field">
+              <label for="message" class="field__label">
+                Leave a message <span class="field__optional">(optional)</span>
+              </label>
+              <textarea
+                id="message"
+                formControlName="message"
+                rows="3"
+                maxlength="200"
+                placeholder="Send a personal note to the organiser and other contributors…"
+                class="field__input field__input--textarea"
+                [class.field__input--error]="hasError('message', 'maxlength')"
+                [attr.aria-invalid]="hasError('message', 'maxlength') || null"
+                aria-describedby="message-error"
+              ></textarea>
+              <div id="message-error" aria-live="polite">
+                @if (hasError('message', 'maxlength')) {
+                  <p class="field-error" role="alert">Message must be 200 characters or fewer.</p>
+                }
+              </div>
+              <p class="field__counter" aria-live="polite" aria-atomic="true">{{ messageLength }}&nbsp;/&nbsp;200</p>
+            </div>
+          </div>
+
+          <!-- ════════════════════════════════════════════════════════════
+               Pay error / retry
+          ════════════════════════════════════════════════════════════ -->
+          @if (payError()) {
+            <div class="status-banner status-banner--error status-banner--inset" role="alert">
+              <svg class="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-9.25a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0v-3zm.75 5.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+              </svg>
+              <div class="flex-1 min-w-0">
+                <p class="font-medium">Payment could not be started</p>
+                <p class="text-xs mt-0.5 opacity-80">{{ payError() }}</p>
+              </div>
+              <button type="button" class="retry-btn" (click)="retry()">Retry</button>
+            </div>
+          }
+
+          <!-- ════════════════════════════════════════════════════════════
+               Submit
+          ════════════════════════════════════════════════════════════ -->
+          <div class="contribute-card__footer">
+            <!-- Summary -->
+            @if (amountValid()) {
+              <p class="amount-summary">
+                You're contributing
+                <strong class="text-forest">${{ (amountPence() / 100).toFixed(2) }}</strong>
+              </p>
+            }
+
+            <app-button
+              variant="primary"
+              size="lg"
+              type="submit"
+              [fullWidth]="true"
+              [loading]="paying()"
+              [disabled]="form.invalid"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M2.5 4A1.5 1.5 0 001 5.5V6h18v-.5A1.5 1.5 0 0017.5 4h-15zM19 8.5H1v6A1.5 1.5 0 002.5 16h15a1.5 1.5 0 001.5-1.5v-6zM3 13.25a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm4.75-.75a.75.75 0 000 1.5h3.5a.75.75 0 000-1.5h-3.5z" clip-rule="evenodd"/>
+              </svg>
+              Pay securely with Stripe
+            </app-button>
+
+            <p class="stripe-note">
+              <svg class="w-3.5 h-3.5 inline-block mr-1 opacity-50" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/>
+              </svg>
+              Secured by Stripe. We never store your card details.
+            </p>
+          </div>
+
+        </form>
+      </div><!-- /.contribute-card -->
+    </div><!-- /.contribute-page__inner -->
+  }
+
+</div>

@@ -1,0 +1,265 @@
+// =============================================================================
+// UpgradeComponent — Pro upgrade page styles
+// =============================================================================
+
+:host { display: block; }
+
+// ── Page shell ──────────────────────────────────────────────────────────────
+
+.upgrade-page {
+  min-height: 100vh;
+  background: var(--color-pale-green, #EAF4DF);
+}
+
+.upgrade-page__inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 1rem 4rem;
+}
+
+// ── Hero ────────────────────────────────────────────────────────────────────
+
+.upgrade-hero {
+  background: linear-gradient(135deg, #2B4D38 0%, #4A7255 100%);
+  padding: 3.5rem 1rem 3rem;
+  text-align: center;
+  color: #fff;
+}
+
+.upgrade-hero__inner {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.upgrade-hero__eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-brand-green, #95C476);
+  margin-bottom: 0.75rem;
+}
+
+.upgrade-hero__heading {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.upgrade-hero__sub {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+// ── Pricing grid ────────────────────────────────────────────────────────────
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: -2rem;         // overlap hero slightly
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Plan card ───────────────────────────────────────────────────────────────
+
+.plan-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid #C8DAC2;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(74, 114, 85, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &--pro {
+    border-color: var(--color-brand-green, #95C476);
+    box-shadow: 0 8px 32px rgba(74, 114, 85, 0.22);
+  }
+}
+
+.plan-card__badge {
+  position: absolute;
+  top: 1.125rem;
+  right: 1.25rem;
+  background: var(--color-brand-green, #95C476);
+  color: var(--color-text-dark, #1E2D23);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+}
+
+.plan-card__header {
+  padding: 1.75rem 1.5rem 1.25rem;
+  border-bottom: 1px solid #EEF3EB;
+}
+
+.plan-card__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-muted, #6A8272);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+
+  &--pro { color: var(--color-forest, #4A7255); }
+}
+
+.plan-card__price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.plan-card__amount {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-text-dark, #1E2D23);
+}
+
+.plan-card__period {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted, #6A8272);
+}
+
+.plan-card__tagline {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6A8272);
+  line-height: 1.5;
+}
+
+// ── Feature list ────────────────────────────────────────────────────────────
+
+.plan-features {
+  list-style: none;
+  padding: 1.25rem 1.5rem;
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.plan-feature {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-dark, #1E2D23);
+
+  &--disabled {
+    color: var(--color-text-muted, #6A8272);
+  }
+}
+
+.plan-feature__icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+
+  &--yes  { color: #22c55e; }
+  &--no   { color: #D1D9CE; }
+  &--pro  { color: var(--color-brand-green, #95C476); }
+}
+
+.plan-feature__label {
+  flex: 1;
+}
+
+.plan-feature__note {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #6A8272);
+  white-space: nowrap;
+
+  &--pro { color: var(--color-forest, #4A7255); }
+}
+
+// ── Card footer ─────────────────────────────────────────────────────────────
+
+.plan-card__footer {
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 1px solid #EEF3EB;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.plan-card__cancel-note {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted, #6A8272);
+  text-align: center;
+}
+
+// ── Error banner ────────────────────────────────────────────────────────────
+
+.upgrade-error {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: var(--color-error, #E53935);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+// ── Upgrade button icon ──────────────────────────────────────────────────────
+
+.upgrade-btn-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+// ── FAQ ─────────────────────────────────────────────────────────────────────
+
+.upgrade-faq {
+  margin-top: 3rem;
+  padding: 0 0.25rem;
+}
+
+.upgrade-faq__heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-dark, #1E2D23);
+  margin-bottom: 1.25rem;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.faq-item {
+  padding: 1.125rem 0;
+  border-bottom: 1px solid #D8E8D2;
+
+  &:last-child { border-bottom: none; }
+}
+
+.faq-item__q {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text-dark, #1E2D23);
+  margin-bottom: 0.375rem;
+}
+
+.faq-item__a {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted, #6A8272);
+  line-height: 1.6;
+}

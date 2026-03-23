@@ -1,0 +1,196 @@
+<div class="dashboard-page">
+  <div class="dashboard-page__header">
+    <div class="dashboard-page__inner">
+      <div class="dashboard-header">
+        <div>
+          <p class="dashboard-header__eyebrow">Dashboard</p>
+          <h1 class="dashboard-header__title">Welcome back, {{ greetingName() }}</h1>
+        </div>
+        <div class="dashboard-header__actions">
+          <app-button variant="primary" size="md" [routerLink]="['/campaigns', 'new']">
+            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"/>
+            </svg>
+            Create New Celebration
+          </app-button>
+          <app-button variant="secondary" size="md" type="button" [loading]="signingOut()" (clicked)="onLogout()">
+            Logout
+          </app-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (!isPro()) {
+    <div class="upgrade-banner" role="banner" aria-label="Upgrade to Pro">
+      <div class="upgrade-banner__inner">
+        <div class="upgrade-banner__text">
+          <svg class="upgrade-banner__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.83-4.401z" clip-rule="evenodd"/>
+          </svg>
+          <span><strong>Unlock Pro features</strong> with QR downloads, cover photos, and more for $9.99/month.</span>
+        </div>
+        <a class="upgrade-banner__cta" [routerLink]="['/pro', 'upgrade']">Upgrade to Pro</a>
+      </div>
+    </div>
+  }
+
+  <div class="dashboard-page__inner dashboard-page__inner--content">
+    @if (loading()) {
+      <p class="sr-only" role="status">Loading your dashboard…</p>
+      <app-skeleton-loader [count]="3" />
+    }
+
+    @if (error()) {
+      <div class="dashboard-error" role="alert">
+        <svg class="w-5 h-5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-9.25a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0v-3zm.75 5.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+        </svg>
+        {{ error() }}
+      </div>
+    }
+
+    @if (!loading() && !error() && rows().length === 0) {
+      <div class="empty-state">
+        <div class="empty-state__icon" aria-hidden="true">
+          <svg class="w-14 h-14 text-mint" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25"
+              d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+          </svg>
+        </div>
+        <h2 class="empty-state__heading">Start your first campaign</h2>
+        <p class="empty-state__body">Create your first celebration and start collecting contributions.</p>
+        <app-button variant="primary" size="lg" [routerLink]="['/campaigns', 'new']">
+          Create your first campaign
+        </app-button>
+      </div>
+    }
+
+    @if (!loading() && rows().length > 0) {
+      <section class="milestones">
+        <div class="section-header">
+          <h2 class="section-header__title">Milestones</h2>
+          <span class="section-header__count">{{ rows().length }} {{ rows().length === 1 ? 'campaign' : 'campaigns' }}</span>
+        </div>
+
+        <ul class="milestone-grid" role="list">
+          @for (row of rows(); track row.campaign.id) {
+            <li class="milestone-card">
+              <div class="milestone-card__hero">
+                @if (row.campaign.coverImageUrl) {
+                  <img
+                    class="milestone-card__hero-bg"
+                    [src]="row.campaign.coverImageUrl"
+                    [alt]="row.campaign.title"
+                  />
+                }
+                <div class="milestone-card__top-actions">
+                  <button
+                    class="milestone-card__top-icon"
+                    type="button"
+                    [routerLink]="['/campaigns', row.campaign.slug, 'edit']"
+                    aria-label="Edit campaign"
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path d="M2 14.5V18h3.5l9.243-9.243-3.5-3.5L2 14.5z"/>
+                      <path d="M15.854 2.646a.5.5 0 00-.708 0l-2.06 2.06 3.5 3.5 2.06-2.06a.5.5 0 000-.708l-2.792-2.792z"/>
+                    </svg>
+                  </button>
+                  <button
+                    class="milestone-card__top-icon milestone-card__top-icon--danger"
+                    type="button"
+                    [disabled]="row.deleting"
+                    (click)="onDeleteCampaign(row.campaign)"
+                    aria-label="Delete campaign"
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M7 4a1 1 0 011-1h4a1 1 0 011 1v1h3a1 1 0 110 2h-1v9a2 2 0 01-2 2H7a2 2 0 01-2-2V7H4a1 1 0 010-2h3V4zm2 3a1 1 0 112 0v8a1 1 0 11-2 0V7z" clip-rule="evenodd"/>
+                    </svg>
+                  </button>
+                </div>
+                @if (!row.campaign.coverImageUrl) {
+                  <div class="milestone-card__hero-icon" aria-hidden="true">
+                    @if (row.campaign.status === 'closed') {
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+                      </svg>
+                    } @else if (row.campaign.status === 'new') {
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2z" clip-rule="evenodd"/>
+                      </svg>
+                    } @else {
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M11.707 8.293a1 1 0 00-1.414 0L9 9.586 7.707 8.293a1 1 0 00-1.414 1.414L7.586 11l-1.293 1.293a1 1 0 101.414 1.414L9 12.414l1.293 1.293a1 1 0 001.414-1.414L10.414 11l1.293-1.293a1 1 0 000-1.414z"/>
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.5 7a1.5 1.5 0 113 0v1h1a1.5 1.5 0 010 3h-1v1a1.5 1.5 0 01-3 0v-1h-1a1.5 1.5 0 010-3h1V7z" clip-rule="evenodd"/>
+                      </svg>
+                    }
+                  </div>
+                }
+              </div>
+
+              <a [routerLink]="['/campaigns', row.campaign.slug]" class="milestone-card__title">{{ row.campaign.title }}</a>
+
+              <p class="milestone-card__amount">{{ formatCurrency(row.totals.totalPence, row.campaign.currency) }} Raised</p>
+              <p class="milestone-card__slug">{{ baseHost() }}/{{ row.campaign.slug }}</p>
+
+              <div class="milestone-card__actions">
+                <div class="milestone-card__actions-left">
+                  <app-button variant="secondary" size="sm" type="button" (clicked)="onCopyLink(row.campaign)">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path d="M7 3.5A1.5 1.5 0 018.5 2h3.879a1.5 1.5 0 011.06.44l3.122 3.12A1.5 1.5 0 0117 6.622V12.5a1.5 1.5 0 01-1.5 1.5h-1v-3.379a3 3 0 00-.879-2.121L10.5 5.379A3 3 0 008.379 4.5H7v-1z"/>
+                      <path d="M4.5 6A1.5 1.5 0 003 7.5v9A1.5 1.5 0 004.5 18h7a1.5 1.5 0 001.5-1.5v-5.879a1.5 1.5 0 00-.44-1.06L9.44 6.439A1.5 1.5 0 008.378 6H4.5z"/>
+                    </svg>
+                    {{ row.copySuccess ? 'Copied!' : 'Copy Link' }}
+                  </app-button>
+                  @if (row.campaign.isPro) {
+                    <app-button variant="secondary" size="sm" type="button" (clicked)="downloadQrForCampaign(row.campaign.slug)">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z"/>
+                        <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+                      </svg>
+                      Download QR
+                    </app-button>
+                  }
+                </div>
+                <div [id]="'qr-' + row.campaign.slug" class="milestone-card__actions-right">
+                  <app-qr-code
+                    [url]="row.campaignUrl"
+                    [isPro]="row.campaign.isPro"
+                    [size]="80"
+                    [filename]="row.campaign.slug"
+                    [showDownload]="false"
+                  />
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section class="activity">
+        <div class="section-header">
+          <h2 class="section-header__title">Recent Activity</h2>
+          <a class="activity__all" [routerLink]="['/campaigns']">See all activity</a>
+        </div>
+
+        @if (recentActivity().length === 0) {
+          <p class="activity__empty">No contributions yet. Share your campaign links to get started.</p>
+        } @else {
+          <ul class="activity-list" role="list">
+            @for (item of recentActivity(); track item.id) {
+              <li class="activity-item">
+                <div class="activity-item__avatar">{{ item.contributorName.charAt(0).toUpperCase() }}</div>
+                <p class="activity-item__text">
+                  <strong>{{ item.contributorName }}</strong> donated
+                  <strong>{{ formatMajorCurrency(item.amount, item.currency) }}</strong>
+                  for {{ item.campaignTitle }}
+                </p>
+                <span class="activity-item__time">{{ formatRelativeTime(item.createdAt) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  </div>
+</div>
