@@ -58,12 +58,44 @@
 }
 
 .campaign-page__inner {
-  max-width: 680px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem 5rem;
+  min-height: calc(100vh - 5rem);
+  display: flex;
+  align-items: center;
+
+  @media (max-width: 980px) {
+    min-height: auto;
+    display: block;
+    padding-top: 1rem;
+  }
+}
+
+.campaign-layout {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(320px, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 980px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.campaign-main,
+.campaign-side {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.campaign-side {
+  @media (min-width: 981px) {
+    position: sticky;
+    top: 1rem;
+  }
 }
 
 // ── Closed banner ──────────────────────────────────────────────────────────
@@ -89,7 +121,7 @@
 
 .cover-wrap {
   width: 100%;
-  border-radius: 0 0 12px 12px;
+  border-radius: 12px;
   overflow: hidden;
   box-shadow: var(--shadow-md);
 }
@@ -109,7 +141,7 @@
   width: 100%;
   aspect-ratio: 16 / 7;
   background: linear-gradient(135deg, #d4edbe 0%, var(--color-pale-green, #EAF4DF) 100%);
-  border-radius: 0 0 12px 12px;
+  border-radius: 12px;
 }
 
 // ── Campaign header ────────────────────────────────────────────────────────

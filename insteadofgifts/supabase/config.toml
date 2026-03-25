@@ -50,6 +50,12 @@ enable_confirmations = false
 [functions.create-checkout-session]
 verify_jwt = false
 
+# confirm-contribution: called by the campaign success redirect with a Stripe
+# Checkout Session ID. No Supabase JWT required; Stripe session verification is
+# done inside the function before writing to DB.
+[functions.confirm-contribution]
+verify_jwt = false
+
 # stripe-subscription: called by authenticated users to start a Pro subscription.
 # JWT verification is enabled (default). The function reads the JWT to identify
 # the user and creates/reuses their Stripe customer record.

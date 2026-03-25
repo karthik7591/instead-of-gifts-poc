@@ -150,7 +150,9 @@ export class ContributeComponent implements OnInit {
         contributorName,
         message:         message.trim(),
         isAnonymous,
-        successUrl: `${origin}/campaigns/${c.slug}?contributed=true`,
+        // {CHECKOUT_SESSION_ID} is replaced by Stripe with the real session ID on redirect.
+        // campaign-view.component reads it and calls confirm-contribution to write the DB row.
+        successUrl: `${origin}/campaigns/${c.slug}?contributed=true&session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl:  `${origin}/contribute/${c.slug}?payment_cancelled=true`,
       });
       // If redirectToCheckout resolves without navigating away, the backend

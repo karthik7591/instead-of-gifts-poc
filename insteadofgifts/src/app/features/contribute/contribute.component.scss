@@ -98,6 +98,11 @@
   overflow: hidden;
 }
 
+.contribute-form-layout {
+  display: flex;
+  flex-direction: column;
+}
+
 .contribute-card__header {
   display: flex;
   align-items: center;
@@ -378,4 +383,23 @@
   text-align: center;
   font-size: 0.75rem;
   color: var(--color-text-muted, #6A8272);
+}
+
+@media (min-width: 1024px) {
+  .contribute-page__inner {
+    max-width: 980px;
+  }
+
+  .contribute-form-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .contribute-form-layout .form-divider {
+    width: 1px;
+    height: auto;
+    border-top: 0;
+    border-left: 1px solid #f0f4ef;
+  }
 }

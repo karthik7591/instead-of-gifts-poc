@@ -62,131 +62,132 @@
         </div>
 
         <form (ngSubmit)="onSubmit()" [formGroup]="form" novalidate>
+          <div class="contribute-form-layout">
+            <!-- ════════════════════════════════════════════════════════════
+                 SECTION 1 — Amount
+            ════════════════════════════════════════════════════════════ -->
+            <div class="form-section">
+              <h2 class="form-section__title">Choose an amount</h2>
 
-          <!-- ════════════════════════════════════════════════════════════
-               SECTION 1 — Amount
-          ════════════════════════════════════════════════════════════ -->
-          <div class="form-section">
-            <h2 class="form-section__title">Choose an amount</h2>
-
-            <!-- Preset pills -->
-            <div class="amount-pills" role="group" aria-label="Suggested amounts">
-              @for (preset of presets; track preset) {
-                <button
-                  type="button"
-                  class="amount-pill"
-                  [class.amount-pill--selected]="selectedPreset() === preset"
-                  (click)="selectPreset(preset)"
-                  [attr.aria-pressed]="selectedPreset() === preset"
-                >
-                  ${{ preset }}
-                </button>
-              }
-            </div>
-
-            <!-- Custom amount -->
-            <div class="custom-amount-wrap">
-              <span class="custom-amount__symbol" aria-hidden="true">$</span>
-              <input
-                id="customAmount"
-                type="number"
-                inputmode="decimal"
-                min="1"
-                step="any"
-                placeholder="Other amount"
-                class="custom-amount__input"
-                [class.custom-amount__input--selected]="selectedPreset() === 'custom'"
-                [class.custom-amount__input--error]="amountTouched() && !amountValid() && selectedPreset() === 'custom'"
-                [attr.aria-invalid]="(amountTouched() && !amountValid()) || null"
-                aria-label="Custom amount in dollars"
-                aria-describedby="amount-error"
-                [value]="customAmountRaw()"
-                (input)="onCustomInput($event)"
-                (focus)="onCustomFocus()"
-              />
-            </div>
-
-            <!-- Amount validation message -->
-            <div id="amount-error" aria-live="polite">
-              @if (amountTouched() && !amountValid()) {
-                <p class="field-error" role="alert">Please enter an amount of at least $1.</p>
-              }
-            </div>
-          </div>
-
-          <hr class="form-divider" />
-
-          <!-- ════════════════════════════════════════════════════════════
-               SECTION 2 — Contributor details
-          ════════════════════════════════════════════════════════════ -->
-          <div class="form-section">
-            <h2 class="form-section__title">Your details</h2>
-
-            <!-- Name -->
-            <div class="field">
-              <label for="name" class="field__label">
-                Your name <span class="field__optional">(optional)</span>
-              </label>
-              <input
-                id="name"
-                type="text"
-                formControlName="name"
-                placeholder="e.g. James Smith"
-                class="field__input"
-                autocomplete="name"
-                [disabled]="form.controls.isAnonymous.value"
-              />
-              <p class="field__hint">Leave blank to contribute as Anonymous.</p>
-            </div>
-
-            <!-- Anonymous toggle -->
-            <label class="toggle-row">
-              <div class="toggle-row__text">
-                <span class="toggle-row__label">Contribute anonymously</span>
-                <span class="toggle-row__desc">Your name will not appear on the campaign page.</span>
-              </div>
-              <div class="toggle-wrap">
-                <input
-                  type="checkbox"
-                  formControlName="isAnonymous"
-                  class="sr-only"
-                  id="isAnonymous"
-                  role="switch"
-                  [attr.aria-checked]="form.controls.isAnonymous.value"
-                />
-                <div
-                  class="toggle"
-                  [class.toggle--on]="form.controls.isAnonymous.value"
-                  (click)="form.controls.isAnonymous.setValue(!form.controls.isAnonymous.value)"
-                  aria-hidden="true"
-                >
-                  <div class="toggle__thumb"></div>
-                </div>
-              </div>
-            </label>
-
-            <!-- Message -->
-            <div class="field">
-              <label for="message" class="field__label">
-                Leave a message <span class="field__optional">(optional)</span>
-              </label>
-              <textarea
-                id="message"
-                formControlName="message"
-                rows="3"
-                maxlength="200"
-                placeholder="Send a personal note to the organiser and other contributors…"
-                class="field__input field__input--textarea"
-                [class.field__input--error]="hasError('message', 'maxlength')"
-                [attr.aria-invalid]="hasError('message', 'maxlength') || null"
-                aria-describedby="message-error"
-              ></textarea>
-              <div id="message-error" aria-live="polite">
-                @if (hasError('message', 'maxlength')) {
-                  <p class="field-error" role="alert">Message must be 200 characters or fewer.</p>
+              <!-- Preset pills -->
+              <div class="amount-pills" role="group" aria-label="Suggested amounts">
+                @for (preset of presets; track preset) {
+                  <button
+                    type="button"
+                    class="amount-pill"
+                    [class.amount-pill--selected]="selectedPreset() === preset"
+                    (click)="selectPreset(preset)"
+                    [attr.aria-pressed]="selectedPreset() === preset"
+                  >
+                    ${{ preset }}
+                  </button>
                 }
               </div>
-              <p class="field__counter" aria-live="polite" aria-atomic="true">{{ messageLength }}&nbsp;/&nbsp;200</p>
+
+              <!-- Custom amount -->
+              <div class="custom-amount-wrap">
+                <span class="custom-amount__symbol" aria-hidden="true">$</span>
+                <input
+                  id="customAmount"
+                  type="number"
+                  inputmode="decimal"
+                  min="1"
+                  step="any"
+                  placeholder="Other amount"
+                  class="custom-amount__input"
+                  [class.custom-amount__input--selected]="selectedPreset() === 'custom'"
+                  [class.custom-amount__input--error]="amountTouched() && !amountValid() && selectedPreset() === 'custom'"
+                  [attr.aria-invalid]="(amountTouched() && !amountValid()) || null"
+                  aria-label="Custom amount in dollars"
+                  aria-describedby="amount-error"
+                  [value]="customAmountRaw()"
+                  (input)="onCustomInput($event)"
+                  (focus)="onCustomFocus()"
+                />
+              </div>
+
+              <!-- Amount validation message -->
+              <div id="amount-error" aria-live="polite">
+                @if (amountTouched() && !amountValid()) {
+                  <p class="field-error" role="alert">Please enter an amount of at least $1.</p>
+                }
+              </div>
+            </div>
+
+            <hr class="form-divider" />
+
+            <!-- ════════════════════════════════════════════════════════════
+                 SECTION 2 — Contributor details
+            ════════════════════════════════════════════════════════════ -->
+            <div class="form-section">
+              <h2 class="form-section__title">Your details</h2>
+
+              <!-- Name -->
+              <div class="field">
+                <label for="name" class="field__label">
+                  Your name <span class="field__optional">(optional)</span>
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  formControlName="name"
+                  placeholder="e.g. James Smith"
+                  class="field__input"
+                  autocomplete="name"
+                  [disabled]="form.controls.isAnonymous.value"
+                />
+                <p class="field__hint">Leave blank to contribute as Anonymous.</p>
+              </div>
+
+              <!-- Anonymous toggle -->
+              <label class="toggle-row">
+                <div class="toggle-row__text">
+                  <span class="toggle-row__label">Contribute anonymously</span>
+                  <span class="toggle-row__desc">Your name will not appear on the campaign page.</span>
+                </div>
+                <div class="toggle-wrap">
+                  <input
+                    type="checkbox"
+                    formControlName="isAnonymous"
+                    class="sr-only"
+                    id="isAnonymous"
+                    role="switch"
+                    [attr.aria-checked]="form.controls.isAnonymous.value"
+                  />
+                  <div
+                    class="toggle"
+                    [class.toggle--on]="form.controls.isAnonymous.value"
+                    (click)="form.controls.isAnonymous.setValue(!form.controls.isAnonymous.value)"
+                    aria-hidden="true"
+                  >
+                    <div class="toggle__thumb"></div>
+                  </div>
+                </div>
+              </label>
+
+              <!-- Message -->
+              <div class="field">
+                <label for="message" class="field__label">
+                  Leave a message <span class="field__optional">(optional)</span>
+                </label>
+                <textarea
+                  id="message"
+                  formControlName="message"
+                  rows="3"
+                  maxlength="200"
+                  placeholder="Send a personal note to the organiser and other contributors…"
+                  class="field__input field__input--textarea"
+                  [class.field__input--error]="hasError('message', 'maxlength')"
+                  [attr.aria-invalid]="hasError('message', 'maxlength') || null"
+                  aria-describedby="message-error"
+                ></textarea>
+                <div id="message-error" aria-live="polite">
+                  @if (hasError('message', 'maxlength')) {
+                    <p class="field-error" role="alert">Message must be 200 characters or fewer.</p>
+                  }
+                </div>
+                <p class="field__counter" aria-live="polite" aria-atomic="true">{{ messageLength }}&nbsp;/&nbsp;200</p>
+              </div>
             </div>
           </div>
 

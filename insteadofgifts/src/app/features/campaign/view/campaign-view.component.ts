@@ -1,7 +1,6 @@
 import {
   Component,
   OnInit,
-  OnDestroy,
   inject,
   signal,
   computed,
@@ -30,7 +29,7 @@ import { QrCodeComponent } from '../../../shared/components/qr-code/qr-code.comp
   templateUrl: './campaign-view.component.html',
   styleUrl: './campaign-view.component.scss',
 })
-export class CampaignViewComponent implements OnInit, OnDestroy {
+export class CampaignViewComponent implements OnInit {
   private readonly route        = inject(ActivatedRoute);
   private readonly router       = inject(Router);
   private readonly campaignSvc  = inject(CampaignService);
@@ -60,24 +59,24 @@ export class CampaignViewComponent implements OnInit, OnDestroy {
     return c ? `${window.location.origin}/campaigns/${c.slug}` : '';
   });
 
-  private unsubscribe?: () => void;
-
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   async ngOnInit(): Promise<void> {
     const slug = this.route.snapshot.paramMap.get('id') ?? '';
 
-    // Show thank-you banner when Stripe redirects back after a successful payment,
-    // then strip the query param so a page refresh doesn't re-show it.
+    // Show thank-you banner when Stripe redirects back after a successful payment.
+    // Read session_id BEFORE stripping query params — it's the Stripe Checkout Session ID
+    // injected by {CHECKOUT_SESSION_ID} in the success URL.
     const wasContributed = this.route.snapshot.queryParamMap.get('contributed') === 'true';
+    const sessionId      = this.route.snapshot.queryParamMap.get('session_id') ?? null;
     if (wasContributed) {
       this.showThankYou.set(true);
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: { contributed: null },
-        queryParamsHandling: 'merge',
-        replaceUrl: true,
-      });
+      // this.router.navigate([], {
+      //   relativeTo: this.route,
+      //   queryParams: { contributed: null, session_id: null },
+      //   queryParamsHandling: 'merge',
+      //   replaceUrl: true,
+      // });
       setTimeout(() => this.showThankYou.set(false), 6000);
     }
 
@@ -95,12 +94,29 @@ export class CampaignViewComponent implements OnInit, OnDestroy {
       this.totals.set(initial);
       this.contributions.set(contribs);
 
-      // Post-payment race condition: Stripe redirects before the webhook fires,
-      // so the initial fetch may have captured stale totals. Re-fetch after 3s
-      // (enough time for the webhook to write the contribution row) and again
-      // at 8s as a safety net for slow webhook delivery.
+      // Post-payment: write the contribution row to Supabase and refresh the view.
+      //
+      // Primary path  — session_id present (Stripe injected it via {CHECKOUT_SESSION_ID}):
+      //   Call confirm-contribution, which verifies the payment with Stripe and upserts
+      //   the contributions row synchronously. Then re-fetch to show the updated totals.
+      //
+      // Fallback path — no session_id (old links, direct navigation):
+      //   The async Stripe webhook will eventually write the row. Re-fetch after 3 s.
       if (wasContributed) {
-        for (const delay of [3000, 8000]) {
+        if (sessionId) {
+          try {
+            await this.supabaseSvc.confirmContribution(sessionId);
+          } catch { /* webhook will handle it if the Edge Function fails */ }
+
+          try {
+            const [refreshedTotals, refreshedContribs] = await Promise.all([
+              this.supabaseSvc.getCampaignTotals(c.id),
+              this.supabaseSvc.getContributions(c.id, 10),
+            ]);
+            this.totals.set(refreshedTotals);
+            this.contributions.set(refreshedContribs);
+          } catch { /* silent */ }
+        } else {
           setTimeout(async () => {
             try {
               const [refreshedTotals, refreshedContribs] = await Promise.all([
@@ -109,38 +125,9 @@ export class CampaignViewComponent implements OnInit, OnDestroy {
               ]);
               this.totals.set(refreshedTotals);
               this.contributions.set(refreshedContribs);
-            } catch { /* silent — realtime will catch it if the webhook fires later */ }
-          }, delay);
+            } catch { /* silent */ }
+          }, 3000);
         }
-      }
-
-      // Realtime: only subscribe to live updates for active campaigns
-      if (c.status !== 'closed') {
-        this.unsubscribe = this.supabaseSvc.subscribeToContributions(
-          c.id,
-          (payload) => {
-            const incoming = Number(payload.new.amount);
-
-            // Update running totals
-            this.totals.update((prev) => ({
-              total:      prev.total + incoming,
-              totalPence: Math.round((prev.total + incoming) * 100),
-              count:      prev.count + 1,
-            }));
-
-            // Prepend to visible list if not anonymous
-            if (!payload.new.is_anonymous) {
-              const newEntry: ContributionDisplay = {
-                id:              payload.new.id,
-                contributorName: payload.new.contributor_name,
-                amount:          incoming,
-                message:         payload.new.message,
-                createdAt:       payload.new.created_at,
-              };
-              this.contributions.update((prev) => [newEntry, ...prev].slice(0, 10));
-            }
-          }
-        );
       }
     } catch (e) {
       this.error.set('Failed to load campaign.');
@@ -148,10 +135,6 @@ export class CampaignViewComponent implements OnInit, OnDestroy {
     } finally {
       this.loading.set(false);
     }
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe?.();
   }
 
   // ── Actions ────────────────────────────────────────────────────────────────

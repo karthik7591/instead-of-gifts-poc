@@ -1,7 +1,6 @@
 import {
   Component,
   OnInit,
-  OnDestroy,
   inject,
   signal,
   computed,
@@ -52,7 +51,7 @@ interface DashboardActivity {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnInit {
   private readonly campaignSvc = inject(CampaignService);
   private readonly supabaseSvc = inject(SupabaseService);
   private readonly authSvc     = inject(AuthService);
@@ -87,8 +86,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       currency:           'USD',
     };
   });
-
-  private readonly unsubscribeFns: Array<() => void> = [];
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
@@ -143,45 +140,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         .slice(0, 8);
       this.recentActivity.set(activity);
 
-      // Realtime subscriptions — one channel per active campaign
-      for (const c of campaigns.filter((c) => c.status !== 'closed')) {
-        const unsub = this.supabaseSvc.subscribeToContributions(
-          c.id,
-          (payload) => {
-            const incoming = Number(payload.new.amount);
-            this.rows.update((prev) =>
-              prev.map((row) => {
-                if (row.campaign.id !== c.id) return row;
-                const newTotal = row.totals.total + incoming;
-                return {
-                  ...row,
-                  totals: {
-                    total:      newTotal,
-                    totalPence: Math.round(newTotal * 100),
-                    count:      row.totals.count + 1,
-                  },
-                };
-              })
-            );
-
-            // Push into recent activity only for named contributors.
-            if (!payload.new.is_anonymous && payload.new.contributor_name) {
-              const incomingActivity: DashboardActivity = {
-                id: payload.new.id,
-                campaignId: c.id,
-                campaignTitle: c.title,
-                contributorName: payload.new.contributor_name,
-                amount: Number(payload.new.amount),
-                currency: c.currency || 'USD',
-                createdAt: payload.new.created_at,
-              };
-              this.recentActivity.update((prev) => [incomingActivity, ...prev].slice(0, 8));
-            }
-          }
-        );
-        this.unsubscribeFns.push(unsub);
-      }
-
       if (isPlatformBrowser(this.platformId)) {
         this.baseHost.set(window.location.host.replace(/^www\./, ''));
       }
@@ -191,10 +149,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } finally {
       this.loading.set(false);
     }
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribeFns.forEach((fn) => fn());
   }
 
   // ── Actions ────────────────────────────────────────────────────────────────

@@ -1,24 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import {
-  createClient,
-  RealtimePostgresInsertPayload,
-  RealtimePostgresUpdatePayload,
-  SupabaseClient,
-} from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
-
-export interface ContributionRow {
-  id: string;
-  campaign_id: string;
-  amount: number;         // major currency units as stored in DB (e.g. 45.00 USD)
-  message: string | null;
-  is_anonymous: boolean;
-  contributor_name: string | null;
-  stripe_pi_id: string;
-  status: 'pending' | 'succeeded' | 'failed';
-  created_at: string;
-}
 
 export interface ContributionDisplay {
   id: string;
@@ -74,6 +57,23 @@ export class SupabaseService {
   }
 
   /**
+   * Calls the confirm-contribution Edge Function with the Stripe Checkout Session ID
+   * returned in the success-URL redirect. The function verifies the payment with
+   * Stripe and upserts the contribution row, making the DB update immediate rather
+   * than dependent on the async webhook delivery.
+   *
+   * Idempotent — safe to call even if the webhook already ran.
+   */
+  async confirmContribution(sessionId: string): Promise<void> {
+    const { error } = await this.client.functions.invoke('confirm-contribution', {
+      body: { sessionId },
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
+  /**
    * Fetches the most recent non-anonymous succeeded contributions for a
    * campaign from the `contributions_public` view (which nulls out names
    * when is_anonymous = true — the WHERE clause here adds a second guard).
@@ -105,44 +105,4 @@ export class SupabaseService {
     }));
   }
 
-  /**
-   * Subscribes to succeeded contributions for a campaign via Supabase Realtime.
-   * Listens for both INSERT (direct succeeded rows) and UPDATE (pending→succeeded
-   * transitions written by the webhook). Filters at the channel level by
-   * campaign_id; status is checked in the callback.
-   *
-   * @returns Unsubscribe function — call it in ngOnDestroy / DestroyRef.
-   */
-  subscribeToContributions(
-    campaignId: string,
-    callback: (payload: RealtimePostgresInsertPayload<ContributionRow> | RealtimePostgresUpdatePayload<ContributionRow>) => void
-  ): () => void {
-    const channelName = `contributions:campaign_id=eq.${campaignId}`;
-    const filter = { schema: 'public', table: 'contributions', filter: `campaign_id=eq.${campaignId}` };
-
-    const channel = this.client
-      .channel(channelName)
-      .on<ContributionRow>(
-        'postgres_changes',
-        { event: 'INSERT', ...filter },
-        (payload) => {
-          if (payload.new.status === 'succeeded') { callback(payload); }
-        }
-      )
-      .on<ContributionRow>(
-        'postgres_changes',
-        { event: 'UPDATE', ...filter },
-        (payload) => {
-          // Only fire when a row transitions TO succeeded (e.g. pending → succeeded via webhook).
-          if (payload.new.status === 'succeeded' && payload.old?.status !== 'succeeded') {
-            callback(payload as unknown as RealtimePostgresInsertPayload<ContributionRow>);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      this.client.removeChannel(channel);
-    };
-  }
 }
