@@ -9,7 +9,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { environment } from '../../../../environments/environment';
 
 interface PlanFeature {
   label:    string;
@@ -37,7 +36,6 @@ export class UpgradeComponent {
   readonly features: PlanFeature[] = [
     { label: 'Gift campaigns',         free: 'Up to 3',   pro: 'Unlimited'  },
     { label: 'Contribution tracking',  free: true,        pro: true         },
-    { label: 'Real-time updates',      free: true,        pro: true         },
     { label: 'Share link',             free: true,        pro: true         },
     { label: 'Cover photo upload',     free: false,       pro: true         },
     { label: 'Custom thank-you message', free: false,     pro: true         },
@@ -63,21 +61,17 @@ export class UpgradeComponent {
       const successUrl = `${origin}/pro/upgrade/success`;
       const cancelUrl  = `${origin}/pro/upgrade`;
 
-      const res = await fetch(`${environment.apiUrl}/stripe-subscription`, {
-        method:  'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ successUrl, cancelUrl }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as { error?: string };
-        throw new Error(body.error ?? `Request failed (${res.status})`);
+      const { data, error } = await this.supabase.client.functions.invoke<{ url: string }>(
+        'stripe-subscription',
+        { body: { successUrl, cancelUrl } }
+      );
+      if (error) {
+        throw new Error(error.message || 'Unable to start checkout.');
       }
-
-      const { url } = await res.json() as { url: string };
+      if (!data?.url) {
+        throw new Error('Checkout URL missing from response.');
+      }
+      const { url } = data;
       window.location.href = url;
 
     } catch (err: unknown) {

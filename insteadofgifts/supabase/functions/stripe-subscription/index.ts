@@ -80,6 +80,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (!successUrl || !cancelUrl) {
     return respond(400, { error: 'successUrl and cancelUrl are required' });
   }
+  const successUrlWithSession = buildSuccessUrl(successUrl);
 
   // ── Retrieve or create Stripe customer ───────────────────────────────────
   const { data: profile } = await supabase
@@ -135,7 +136,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       type:             'pro_subscription',
     },
     allow_promotion_codes: true,
-    success_url:           successUrl,
+    success_url:           successUrlWithSession,
     cancel_url:            cancelUrl,
   });
 
@@ -156,4 +157,9 @@ function respond(status: number, body: Record<string, unknown>): Response {
     status,
     headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
   });
+}
+
+function buildSuccessUrl(successUrl: string): string {
+  const separator = successUrl.includes('?') ? '&' : '?';
+  return `${successUrl}${separator}session_id={CHECKOUT_SESSION_ID}`;
 }

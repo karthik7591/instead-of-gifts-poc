@@ -5,8 +5,9 @@ import {
   signal,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProService } from '../../../core/services/pro.service';
+import { SupabaseService } from '../../../core/services/supabase.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 /**
@@ -107,13 +108,21 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
 })
 export class UpgradeSuccessComponent implements OnInit {
   private readonly proSvc = inject(ProService);
-  private readonly router = inject(Router);
+  private readonly supabase = inject(SupabaseService);
+  private readonly route = inject(ActivatedRoute);
 
   readonly loading = signal(true);
 
   async ngOnInit(): Promise<void> {
-    // Poll briefly to give the webhook time to flip is_pro = true.
-    // In practice the webhook fires almost instantly; 3 retries × 1.5 s = 4.5 s max.
+    const sessionId = this.route.snapshot.queryParamMap.get('session_id');
+    if (sessionId) {
+      // Deterministic post-checkout activation in case webhook delivery is delayed.
+      await this.supabase.client.functions.invoke('confirm-subscription', {
+        body: { sessionId },
+      });
+    }
+
+    // Poll briefly to pick up the latest profile state.
     let retries = 3;
     while (retries-- > 0) {
       await this.proSvc.loadProfile();

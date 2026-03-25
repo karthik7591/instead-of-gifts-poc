@@ -60,7 +60,14 @@ verify_jwt = false
 # JWT verification is enabled (default). The function reads the JWT to identify
 # the user and creates/reuses their Stripe customer record.
 [functions.stripe-subscription]
-verify_jwt = true
+# Keep gateway JWT check off; token is validated inside the function with
+# supabase.auth.getUser(jwt), which avoids false "Invalid JWT" gateway rejects.
+verify_jwt = false
+
+# confirm-subscription: called by the post-checkout success page with session_id.
+# The function validates the user JWT and checkout session before activating Pro.
+[functions.confirm-subscription]
+verify_jwt = false
 
 # stripe-webhook: called by Stripe, not by users. Stripe signs requests with
 # STRIPE_WEBHOOK_SECRET which we verify inside the function.
