@@ -29,29 +29,15 @@
 .auth-logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.625rem;
   text-decoration: none;
 
   &:focus-visible { outline: 2px solid var(--color-forest, #4A7255); border-radius: 8px; }
 }
 
-.auth-logo__icon {
-  width: 2.75rem;
-  height: 2.75rem;
-  flex-shrink: 0;
-}
-
-.auth-logo__wordmark {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--color-text-dark, #1E2D23);
-  letter-spacing: -0.02em;
-}
-
-.auth-tagline {
-  font-size: 0.9375rem;
-  color: var(--color-text-muted, #6A8272);
-  font-style: italic;
+.auth-logo__image {
+  width: min(320px, 80vw);
+  height: auto;
+  display: block;
 }
 
 // ── Card ────────────────────────────────────────────────────────────────────
