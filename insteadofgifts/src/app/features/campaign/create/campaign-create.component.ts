@@ -18,6 +18,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CampaignService } from '../../../core/services/campaign.service';
+import { CampaignFundUse } from '../../../core/models/campaign.model';
 import { ProService } from '../../../core/services/pro.service';
 import { generateSlug } from '../../../core/utils/slug.util';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -41,6 +42,7 @@ function futureDateValidator(control: AbstractControl): ValidationErrors | null 
 export interface CreateCampaignForm {
   title:         FormControl<string>;
   description:   FormControl<string>;
+  fundUse:       FormControl<CampaignFundUse | null>;
   targetAmount:  FormControl<number | null>;
   deadline:      FormControl<string | null>;
   customMessage: FormControl<string>;
@@ -86,6 +88,7 @@ export class CampaignCreateComponent implements OnInit, OnDestroy {
     description: this.fb.nonNullable.control('', [
       Validators.maxLength(500),
     ]),
+    fundUse: this.fb.control<CampaignFundUse | null>(null),
     targetAmount: this.fb.control<number | null>(null, [
       positiveAmountValidator,
     ]),
@@ -139,12 +142,13 @@ export class CampaignCreateComponent implements OnInit, OnDestroy {
     this.submitError.set(null);
 
     try {
-      const { title, description, targetAmount, deadline, customMessage } =
+      const { title, description, fundUse, targetAmount, deadline, customMessage } =
         this.form.getRawValue();
 
       await this.campaignSvc.createCampaign({
         title,
         description:        description || undefined,
+        fundUse:            fundUse ?? null,
         targetAmountPence:  targetAmount != null ? targetAmount * 100 : null,
         deadline:           deadline || null,
         customMessage:      this.isPro() ? (customMessage || undefined) : undefined,

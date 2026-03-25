@@ -109,6 +109,29 @@
             <p class="field__counter" aria-live="polite" aria-atomic="true">{{ descriptionLength }}&nbsp;/&nbsp;500</p>
           </div>
 
+          <!-- Fund use -->
+          <div class="field">
+            <p class="field__label mb-2">Fund Use</p>
+            <div class="field__choices" role="radiogroup" aria-label="Fund use">
+              <label class="field__choice">
+                <input
+                  type="radio"
+                  formControlName="fundUse"
+                  value="educational"
+                />
+                <span>Educational</span>
+              </label>
+              <label class="field__choice">
+                <input
+                  type="radio"
+                  formControlName="fundUse"
+                  value="personal"
+                />
+                <span>Personal</span>
+              </label>
+            </div>
+          </div>
+
           <!-- Target amount -->
           <div class="field">
             <label for="targetAmount" class="field__label">

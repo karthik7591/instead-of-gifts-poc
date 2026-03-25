@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { ToastService } from './toast.service';
-import { Campaign, CampaignStatus } from '../models/campaign.model';
+import { Campaign, CampaignFundUse, CampaignStatus } from '../models/campaign.model';
 import { generateSlug, appendRandomSuffix } from '../utils/slug.util';
 
 /** Maximum retries when a generated slug is already taken. */
@@ -16,6 +16,7 @@ export interface UpdateCampaignInput {
   targetAmountPence?: number | null;
   deadline?: string | null;
   customMessage?: string;
+  fundUse?: CampaignFundUse | null;
 }
 
 export interface CreateCampaignInput {
@@ -26,6 +27,7 @@ export interface CreateCampaignInput {
   deadline?: string | null;     // YYYY-MM-DD or ISO string
   customMessage?: string;
   coverImageFile?: File | null;
+  fundUse?: CampaignFundUse | null;
 }
 
 /** Shape of a row returned by the campaigns table / view. */
@@ -40,6 +42,7 @@ interface CampaignRow {
   is_pro: boolean;
   cover_image_url: string | null;
   custom_message: string | null;
+  fund_use: CampaignFundUse | null;
   created_by: string | null;
   created_at: string;
 }
@@ -163,6 +166,7 @@ export class CampaignService {
         : null,
       deadline:        input.deadline || null,
       custom_message:  input.customMessage?.trim() || null,
+      fund_use:        input.fundUse ?? null,
       cover_image_url: isProCampaign && !input.coverImageFile
         ? DEFAULT_PRO_COVER_IMAGE_URL
         : null as string | null,
@@ -250,6 +254,7 @@ export class CampaignService {
           : null,
         deadline:       input.deadline || null,
         custom_message: input.customMessage?.trim() || null,
+        fund_use:       input.fundUse ?? null,
       })
       .eq('id', id);
 
@@ -330,6 +335,7 @@ export class CampaignService {
       status,
       isPro: row.is_pro,
       customMessage: row.custom_message ?? undefined,
+      fundUse: row.fund_use ?? undefined,
       organiserName: 'Organiser',  // resolved separately when profile data is available
       createdAt: row.created_at,
       endsAt: row.deadline ?? undefined,

@@ -230,6 +230,28 @@
   text-align: right;
 }
 
+.field__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field__choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-dark, #1E2D23);
+  cursor: pointer;
+
+  input[type='radio'] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--color-forest, #4A7255);
+    cursor: pointer;
+  }
+}
+
 // ── Pro badge ──────────────────────────────────────────────────────────────
 
 .badge-pro {

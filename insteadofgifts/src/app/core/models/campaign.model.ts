@@ -1,4 +1,5 @@
 export type CampaignStatus = 'active' | 'closed' | 'new';
+export type CampaignFundUse = 'educational' | 'personal';
 
 export interface Campaign {
   id: string;
@@ -16,4 +17,5 @@ export interface Campaign {
   organiserAvatarUrl?: string;
   createdAt: string;          // ISO 8601
   endsAt?: string;            // ISO 8601, optional deadline
+  fundUse?: CampaignFundUse;
 }

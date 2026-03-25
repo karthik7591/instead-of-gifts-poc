@@ -20,7 +20,7 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CampaignService } from '../../../core/services/campaign.service';
 import { ProService } from '../../../core/services/pro.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { Campaign } from '../../../core/models/campaign.model';
+import { Campaign, CampaignFundUse } from '../../../core/models/campaign.model';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
@@ -42,6 +42,7 @@ function futureDateValidator(control: AbstractControl): ValidationErrors | null 
 export interface EditCampaignForm {
   title:         FormControl<string>;
   description:   FormControl<string>;
+  fundUse:       FormControl<CampaignFundUse | null>;
   targetAmount:  FormControl<number | null>;
   deadline:      FormControl<string | null>;
   customMessage: FormControl<string>;
@@ -83,6 +84,7 @@ export class CampaignEditComponent implements OnInit, OnDestroy {
     description: this.fb.nonNullable.control('', [
       Validators.maxLength(500),
     ]),
+    fundUse: this.fb.control<CampaignFundUse | null>(null),
     targetAmount: this.fb.control<number | null>(null, [
       positiveAmountValidator,
     ]),
@@ -135,6 +137,7 @@ export class CampaignEditComponent implements OnInit, OnDestroy {
     this.form.patchValue({
       title:         c.title,
       description:   c.description ?? '',
+      fundUse:       c.fundUse ?? null,
       // targetAmount stored in cents → convert to dollars for the form
       targetAmount:  c.targetAmount > 0 ? c.targetAmount / 100 : null,
       // endsAt is an ISO string; extract date part for the <input type="date">
@@ -154,12 +157,13 @@ export class CampaignEditComponent implements OnInit, OnDestroy {
     this.submitError.set(null);
 
     try {
-      const { title, description, targetAmount, deadline, customMessage } =
+      const { title, description, fundUse, targetAmount, deadline, customMessage } =
         this.form.getRawValue();
 
       await this.campaignSvc.updateCampaign(c.id, {
         title,
         description:       description || undefined,
+        fundUse:           fundUse ?? null,
         targetAmountPence: targetAmount != null ? targetAmount * 100 : null,
         deadline:          deadline || null,
         customMessage:     this.isPro() ? (customMessage || undefined) : undefined,

@@ -61,10 +61,10 @@
       <div class="campaign-layout">
         <section class="campaign-main">
           <!-- ══ COVER IMAGE ════════════════════════════════════════════════════ -->
-          @if (c.isPro) {
+          @if (c.isPro && c.coverImageUrl) {
             <div class="cover-wrap">
               <img
-                [ngSrc]="c.coverImageUrl || defaultProCoverImageUrl"
+                [ngSrc]="c.coverImageUrl"
                 [alt]="c.title"
                 class="cover-img"
                 width="1200"
