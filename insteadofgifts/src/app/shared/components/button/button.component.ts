@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { NgClass } from '@angular/common';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'pro';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'pro' | 'campaign';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 @Component({
@@ -140,6 +140,14 @@ export class ButtonComponent {
         'hover:bg-pro-dark',
         'active:opacity-90',
         'focus-visible:ring-pro',
+        'shadow-card hover:shadow-hover',
+      ].join(' '),
+
+      campaign: [
+        'bg-[#1f3a64] text-white',
+        'hover:bg-[#1a3153]',
+        'active:bg-[#152948]',
+        'focus-visible:ring-[#1f3a64]',
         'shadow-card hover:shadow-hover',
       ].join(' '),
     };

@@ -98,11 +98,9 @@
             </div>
             <blockquote class="custom-message__text">{{ c.customMessage }}</blockquote>
           </div>
-        } @else {
-          <!-- Free: standard description -->
-          @if (c.description) {
-            <p class="campaign-description">{{ c.description }}</p>
-          }
+        }
+        @if (c.description) {
+          <p class="campaign-description">{{ c.description }}</p>
         }
 
             <!-- Organiser + deadline meta -->
@@ -196,7 +194,7 @@
           <!-- ══ CONTRIBUTE CTA ═════════════════════════════════════════════════ -->
           @if (!isClosed()) {
             <app-button
-              variant="primary"
+              variant="campaign"
               size="lg"
               [fullWidth]="true"
               [routerLink]="['/contribute', c.slug]"

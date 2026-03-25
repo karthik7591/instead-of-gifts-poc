@@ -84,6 +84,15 @@
                     [alt]="row.campaign.title"
                   />
                 }
+                @if (!row.campaign.coverImageUrl) {
+                  <div class="milestone-card__hero-brand">
+                    <img
+                      class="milestone-card__hero-brand-image"
+                      src="/images/iog-black.png"
+                      alt="InsteadOfGifts"
+                    />
+                  </div>
+                }
                 <div class="milestone-card__top-actions">
                   <button
                     class="milestone-card__top-icon"
@@ -108,30 +117,25 @@
                     </svg>
                   </button>
                 </div>
-                @if (!row.campaign.coverImageUrl) {
-                  <div class="milestone-card__hero-icon" aria-hidden="true">
-                    @if (row.campaign.status === 'closed') {
-                      <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
-                      </svg>
-                    } @else if (row.campaign.status === 'new') {
-                      <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2z" clip-rule="evenodd"/>
-                      </svg>
-                    } @else {
-                      <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M11.707 8.293a1 1 0 00-1.414 0L9 9.586 7.707 8.293a1 1 0 00-1.414 1.414L7.586 11l-1.293 1.293a1 1 0 101.414 1.414L9 12.414l1.293 1.293a1 1 0 001.414-1.414L10.414 11l1.293-1.293a1 1 0 000-1.414z"/>
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.5 7a1.5 1.5 0 113 0v1h1a1.5 1.5 0 010 3h-1v1a1.5 1.5 0 01-3 0v-1h-1a1.5 1.5 0 010-3h1V7z" clip-rule="evenodd"/>
-                      </svg>
-                    }
-                  </div>
-                }
               </div>
 
-              <a [routerLink]="['/campaigns', row.campaign.slug]" class="milestone-card__title">{{ row.campaign.title }}</a>
+              <div class="milestone-card__content-row">
+                <div class="milestone-card__content-main">
+                  <a [routerLink]="['/campaigns', row.campaign.slug]" class="milestone-card__title">{{ row.campaign.title }}</a>
 
-              <p class="milestone-card__amount">{{ formatCurrency(row.totals.totalPence, row.campaign.currency) }} Raised</p>
-              <p class="milestone-card__slug">{{ baseHost() }}/{{ row.campaign.slug }}</p>
+                  <p class="milestone-card__amount">{{ formatCurrency(row.totals.totalPence, row.campaign.currency) }} Raised</p>
+                  <p class="milestone-card__slug">{{ baseHost() }}/{{ row.campaign.slug }}</p>
+                </div>
+                <div [id]="'qr-' + row.campaign.slug" class="milestone-card__qr">
+                  <app-qr-code
+                    [url]="row.campaignUrl"
+                    [isPro]="row.campaign.isPro"
+                    [size]="120"
+                    [filename]="row.campaign.slug"
+                    [showDownload]="false"
+                  />
+                </div>
+              </div>
 
               <div class="milestone-card__actions">
                 <div class="milestone-card__actions-left">
@@ -151,15 +155,6 @@
                       Download QR
                     </app-button>
                   }
-                </div>
-                <div [id]="'qr-' + row.campaign.slug" class="milestone-card__actions-right">
-                  <app-qr-code
-                    [url]="row.campaignUrl"
-                    [isPro]="row.campaign.isPro"
-                    [size]="120"
-                    [filename]="row.campaign.slug"
-                    [showDownload]="false"
-                  />
                 </div>
               </div>
             </li>
