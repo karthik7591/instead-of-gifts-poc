@@ -12,6 +12,11 @@ export interface ContributionDisplay {
   createdAt: string;
 }
 
+/** `ContributionDisplay` enriched with the owning campaign's id. */
+export interface ContributionWithCampaign extends ContributionDisplay {
+  campaignId: string;
+}
+
 export interface CampaignTotals {
   /** Sum of succeeded contributions in major currency units (e.g. 45.00). */
   total: number;
@@ -74,9 +79,42 @@ export class SupabaseService {
   }
 
   /**
-   * Fetches the most recent non-anonymous succeeded contributions for a
-   * campaign from the `contributions_public` view (which nulls out names
-   * when is_anonymous = true — the WHERE clause here adds a second guard).
+   * Fetches all succeeded contributions across multiple campaigns in a single
+   * query, sorted newest-first. Used by the Activity page.
+   */
+  async getContributionsForCampaigns(
+    campaignIds: string[],
+    limit = 200,
+  ): Promise<ContributionWithCampaign[]> {
+    if (!campaignIds.length) return [];
+
+    const { data, error } = await this.client
+      .from('contributions_public')
+      .select('id, contributor_name, amount, message, created_at, campaign_id')
+      .in('campaign_id', campaignIds)
+      .eq('status', 'succeeded')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      this.toastSvc.error('Failed to load activity.');
+      throw error;
+    }
+
+    return (data ?? []).map((row) => ({
+      id:              row.id              as string,
+      contributorName: row.contributor_name as string | null,
+      amount:          Number(row.amount),
+      message:         row.message         as string | null,
+      createdAt:       row.created_at      as string,
+      campaignId:      row.campaign_id     as string,
+    }));
+  }
+
+  /**
+   * Fetches the most recent succeeded contributions for a campaign from the
+   * `contributions_public` view. Anonymous names are already nulled by the
+   * view and represented as `null` in `contributorName`.
    */
   async getContributions(
     campaignId: string,
@@ -87,7 +125,6 @@ export class SupabaseService {
       .select('id, contributor_name, amount, message, created_at')
       .eq('campaign_id', campaignId)
       .eq('status', 'succeeded')
-      .eq('is_anonymous', false)
       .order('created_at', { ascending: false })
       .limit(limit);
 

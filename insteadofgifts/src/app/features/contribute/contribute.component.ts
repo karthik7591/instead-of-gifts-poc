@@ -5,8 +5,10 @@ import {
   signal,
   computed,
   ChangeDetectionStrategy,
+  DestroyRef,
   PLATFORM_ID,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { isPlatformBrowser } from '@angular/common';
 import {
   FormBuilder,
@@ -16,6 +18,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { startWith } from 'rxjs';
 
 import { CampaignService } from '../../core/services/campaign.service';
 import { StripeService } from '../../core/services/stripe.service';
@@ -45,6 +48,7 @@ export class ContributeComponent implements OnInit {
   private readonly fb          = inject(FormBuilder);
   private readonly campaignSvc = inject(CampaignService);
   private readonly stripeSvc   = inject(StripeService);
+  private readonly destroyRef  = inject(DestroyRef);
   private readonly platformId  = inject(PLATFORM_ID);
 
   // ── Preset amounts exposed to the template ────────────────────────────────
@@ -87,6 +91,21 @@ export class ContributeComponent implements OnInit {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   async ngOnInit(): Promise<void> {
+    this.form.controls.isAnonymous.valueChanges
+      .pipe(startWith(this.form.controls.isAnonymous.value), takeUntilDestroyed(this.destroyRef))
+      .subscribe((isAnonymous) => {
+        const nameControl = this.form.controls.name;
+        if (isAnonymous) {
+          nameControl.disable({ emitEvent: false });
+          nameControl.clearValidators();
+          nameControl.setValue('', { emitEvent: false });
+        } else {
+          nameControl.enable({ emitEvent: false });
+          nameControl.setValidators([Validators.required]);
+        }
+        nameControl.updateValueAndValidity({ emitEvent: false });
+      });
+
     const slug = this.route.snapshot.paramMap.get('slug') ?? '';
 
     // Detect Stripe cancellation redirect
@@ -139,7 +158,7 @@ export class ContributeComponent implements OnInit {
     this.wasCancelled.set(false);
 
     const { name, message, isAnonymous } = this.form.getRawValue();
-    const contributorName = isAnonymous ? 'Anonymous' : (name.trim() || 'Anonymous');
+    const contributorName = isAnonymous ? 'Anonymous' : name.trim();
 
     const origin = isPlatformBrowser(this.platformId) ? window.location.origin : '';
 

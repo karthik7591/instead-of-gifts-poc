@@ -1,1 +1,226 @@
-<p>campaign works!</p>
+<div class="activity-page">
+  <div class="activity-page__inner">
+
+    <!-- ══════════════════════════════════════════════════════════
+         PAGE HEADER
+    ══════════════════════════════════════════════════════════ -->
+    <div class="page-header">
+      <a routerLink="/dashboard" class="page-header__back" aria-label="Back to dashboard">
+        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 4.158a.75.75 0 11-1.06 1.06l-5.5-5.5a.75.75 0 010-1.06l5.5-5.5a.75.75 0 111.06 1.06L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/>
+        </svg>
+        Dashboard
+      </a>
+
+      <div class="page-header__title-row">
+        <div>
+          <p class="page-header__eyebrow">Campaigns</p>
+          <h1 class="page-header__title">Activity</h1>
+        </div>
+        <app-button variant="primary" size="md" routerLink="/campaigns/new">
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"/>
+          </svg>
+          New Campaign
+        </app-button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         LOADING STATE
+    ══════════════════════════════════════════════════════════ -->
+    @if (loading()) {
+      <p class="sr-only" role="status">Loading activity…</p>
+      <div class="stats-row" aria-hidden="true">
+        @for (_ of [1,2,3]; track $index) {
+          <div class="stat-card stat-card--skeleton">
+            <div class="skeleton skeleton--value"></div>
+            <div class="skeleton skeleton--label"></div>
+          </div>
+        }
+      </div>
+      <div class="skeleton skeleton--filter-bar" aria-hidden="true"></div>
+      <div class="skeleton-list" aria-hidden="true">
+        @for (_ of [1,2,3,4,5]; track $index) {
+          <div class="skeleton-row">
+            <div class="skeleton skeleton--avatar"></div>
+            <div class="skeleton-row__body">
+              <div class="skeleton skeleton--name"></div>
+              <div class="skeleton skeleton--meta"></div>
+            </div>
+            <div class="skeleton skeleton--amount"></div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════
+         ERROR STATE
+    ══════════════════════════════════════════════════════════ -->
+    @if (!loading() && error()) {
+      <div class="error-banner" role="alert">
+        <svg class="w-5 h-5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-9.25a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0v-3zm.75 5.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+        </svg>
+        {{ error() }}
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════
+         CONTENT
+    ══════════════════════════════════════════════════════════ -->
+    @if (!loading() && !error()) {
+
+      <!-- ── Stats row ─────────────────────────────────────────── -->
+      <div class="stats-row" role="region" aria-label="Summary statistics">
+        <div class="stat-card">
+          <span class="stat-card__value">
+            {{ formatAmount(stats().totalRaised) }}
+          </span>
+          <span class="stat-card__label">Total raised</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__value">{{ stats().count }}</span>
+          <span class="stat-card__label">Contributions</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__value">{{ stats().activeCampaigns }}</span>
+          <span class="stat-card__label">Active campaigns</span>
+        </div>
+      </div>
+
+      <!-- ── No campaigns yet ─────────────────────────────────── -->
+      @if (campaigns().length === 0) {
+        <div class="empty-state">
+          <div class="empty-state__icon" aria-hidden="true">
+            <svg class="w-14 h-14" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+            </svg>
+          </div>
+          <h2 class="empty-state__heading">No campaigns yet</h2>
+          <p class="empty-state__body">Create your first campaign to start collecting contributions.</p>
+          <app-button variant="primary" size="lg" routerLink="/campaigns/new">
+            Create your first campaign
+          </app-button>
+        </div>
+      }
+
+      <!-- ── Campaigns exist ──────────────────────────────────── -->
+      @if (campaigns().length > 0) {
+
+        <!-- Filter chips -->
+        <div class="filter-bar" role="tablist" aria-label="Filter by campaign">
+          <button
+            role="tab"
+            class="chip"
+            [class.chip--active]="selectedCampaignId() === null"
+            [attr.aria-selected]="selectedCampaignId() === null"
+            (click)="selectCampaign(null)"
+          >
+            All
+            <span class="chip__badge">{{ items().length }}</span>
+          </button>
+
+          @for (c of campaigns(); track c.id) {
+            <button
+              role="tab"
+              class="chip"
+              [class.chip--active]="selectedCampaignId() === c.id"
+              [attr.aria-selected]="selectedCampaignId() === c.id"
+              (click)="selectCampaign(c.id)"
+            >
+              <span class="chip__dot"
+                [class.chip__dot--closed]="c.status === 'closed'">
+              </span>
+              {{ c.title }}
+              <span class="chip__badge">{{ countByCampaign().get(c.id) ?? 0 }}</span>
+            </button>
+          }
+        </div>
+
+        <!-- ── Empty after filter ──────────────────────────── -->
+        @if (filtered().length === 0) {
+          <div class="empty-state empty-state--filtered">
+            <svg class="w-10 h-10 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+            </svg>
+            <p class="empty-state__body mt-3">No contributions yet for this campaign.<br>Share the link to get started.</p>
+          </div>
+        }
+
+        <!-- ── Activity list ───────────────────────────────── -->
+        @if (filtered().length > 0) {
+          <section class="activity-section" aria-label="Contribution activity">
+            <div class="activity-section__header">
+              <h2 class="activity-section__title">
+                @if (selectedCampaignTitle()) {
+                  {{ selectedCampaignTitle() }}
+                } @else {
+                  All contributions
+                }
+              </h2>
+              <span class="activity-section__count">
+                {{ filtered().length }} {{ filtered().length === 1 ? 'contribution' : 'contributions' }}
+              </span>
+            </div>
+
+            <ul class="activity-list" role="list">
+              @for (item of filtered(); track item.id) {
+                <li class="activity-item">
+
+                  <!-- Avatar -->
+                  <div
+                    class="activity-item__avatar"
+                    [class.activity-item__avatar--anon]="!item.contributorName"
+                    aria-hidden="true"
+                  >
+                    {{ avatarLetter(item.contributorName) }}
+                  </div>
+
+                  <!-- Body -->
+                  <div class="activity-item__body">
+                    <div class="activity-item__top">
+                      <span class="activity-item__name">
+                        {{ item.contributorName ?? 'Anonymous' }}
+                      </span>
+                      @if (item.message) {
+                        <q class="activity-item__message">{{ item.message }}</q>
+                      }
+                    </div>
+                    <div class="activity-item__meta">
+                      <a
+                        [routerLink]="['/campaigns', item.campaignSlug]"
+                        class="activity-item__campaign"
+                        [title]="item.campaignTitle"
+                      >
+                        <svg class="w-3 h-3 shrink-0" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                          <path d="M8 1l2.163 4.279L15 6.09l-3.5 3.326.826 4.693L8 11.75l-4.326 2.359.826-4.693L1 6.09l4.837-.811L8 1z"/>
+                        </svg>
+                        {{ item.campaignTitle }}
+                      </a>
+                      <time
+                        class="activity-item__time"
+                        [attr.datetime]="item.createdAt"
+                        [title]="formatDate(item.createdAt)"
+                      >
+                        {{ formatRelativeTime(item.createdAt) }}
+                      </time>
+                    </div>
+                  </div>
+
+                  <!-- Amount -->
+                  <div class="activity-item__amount">
+                    {{ formatAmount(item.amount) }}
+                  </div>
+
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+      }
+    }
+
+  </div>
+</div>

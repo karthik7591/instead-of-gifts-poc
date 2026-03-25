@@ -125,7 +125,7 @@
               <!-- Name -->
               <div class="field">
                 <label for="name" class="field__label">
-                  Your name <span class="field__optional">(optional)</span>
+                  Your name
                 </label>
                 <input
                   id="name"
@@ -133,10 +133,16 @@
                   formControlName="name"
                   placeholder="e.g. James Smith"
                   class="field__input"
+                  [class.field__input--error]="hasError('name', 'required')"
+                  [attr.aria-invalid]="hasError('name', 'required') || null"
+                  aria-describedby="name-error"
                   autocomplete="name"
-                  [disabled]="form.controls.isAnonymous.value"
                 />
-                <p class="field__hint">Leave blank to contribute as Anonymous.</p>
+                <div id="name-error" aria-live="polite">
+                  @if (hasError('name', 'required')) {
+                    <p class="field-error" role="alert">Name is required unless you contribute anonymously.</p>
+                  }
+                </div>
               </div>
 
               <!-- Anonymous toggle -->
@@ -157,7 +163,6 @@
                   <div
                     class="toggle"
                     [class.toggle--on]="form.controls.isAnonymous.value"
-                    (click)="form.controls.isAnonymous.setValue(!form.controls.isAnonymous.value)"
                     aria-hidden="true"
                   >
                     <div class="toggle__thumb"></div>

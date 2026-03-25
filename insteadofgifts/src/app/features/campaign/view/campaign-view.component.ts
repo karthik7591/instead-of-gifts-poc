@@ -45,6 +45,12 @@ export class CampaignViewComponent implements OnInit {
   readonly copySuccess    = signal(false);
   readonly showThankYou   = signal(false);
 
+  private sortContributionsDesc(items: ContributionDisplay[]): ContributionDisplay[] {
+    return [...items].sort(
+      (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)
+    );
+  }
+
   // ── Derived ────────────────────────────────────────────────────────────────
   readonly liveCampaign = computed<Campaign | null>(() => {
     const c = this.campaign();
@@ -64,7 +70,7 @@ export class CampaignViewComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const slug = this.route.snapshot.paramMap.get('id') ?? '';
 
-    // Show thank-you banner when Stripe redirects back after a successful payment.
+    // Show thank-you popup when Stripe redirects back after a successful payment.
     // Read session_id BEFORE stripping query params — it's the Stripe Checkout Session ID
     // injected by {CHECKOUT_SESSION_ID} in the success URL.
     const wasContributed = this.route.snapshot.queryParamMap.get('contributed') === 'true';
@@ -77,7 +83,6 @@ export class CampaignViewComponent implements OnInit {
       //   queryParamsHandling: 'merge',
       //   replaceUrl: true,
       // });
-      setTimeout(() => this.showThankYou.set(false), 6000);
     }
 
     try {
@@ -92,7 +97,7 @@ export class CampaignViewComponent implements OnInit {
 
       this.campaign.set(c);
       this.totals.set(initial);
-      this.contributions.set(contribs);
+      this.contributions.set(this.sortContributionsDesc(contribs));
 
       // Post-payment: write the contribution row to Supabase and refresh the view.
       //
@@ -114,7 +119,7 @@ export class CampaignViewComponent implements OnInit {
               this.supabaseSvc.getContributions(c.id, 10),
             ]);
             this.totals.set(refreshedTotals);
-            this.contributions.set(refreshedContribs);
+            this.contributions.set(this.sortContributionsDesc(refreshedContribs));
           } catch { /* silent */ }
         } else {
           setTimeout(async () => {
@@ -124,7 +129,7 @@ export class CampaignViewComponent implements OnInit {
                 this.supabaseSvc.getContributions(c.id, 10),
               ]);
               this.totals.set(refreshedTotals);
-              this.contributions.set(refreshedContribs);
+              this.contributions.set(this.sortContributionsDesc(refreshedContribs));
             } catch { /* silent */ }
           }, 3000);
         }
@@ -157,6 +162,10 @@ export class CampaignViewComponent implements OnInit {
       this.copySuccess.set(true);
       setTimeout(() => this.copySuccess.set(false), 2500);
     }
+  }
+
+  dismissThankYou(): void {
+    this.showThankYou.set(false);
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
