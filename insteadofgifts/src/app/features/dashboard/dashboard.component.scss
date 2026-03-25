@@ -314,21 +314,54 @@
 
 .milestone-card__title {
   display: block;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #273128;
   text-decoration: none;
-  line-height: 1.18;
+  line-height: 1.22;
   letter-spacing: -0.01em;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0;
   word-break: break-word;
+
+  &:hover {
+    color: #1e2d23;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #2f6f49;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+.milestone-card__title-wrap {
+  margin: 0;
 }
 
 .milestone-card__amount {
-  font-size: 1.2rem;
+  margin-top: 0.38rem;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
   color: var(--color-text-dark, #1E2D23);
+  line-height: 1.1;
+}
+
+.milestone-card__amount-value {
+  font-size: 1.38rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.milestone-card__amount-label {
+  font-size: 0.78rem;
   font-weight: 700;
-  line-height: 1.08;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #68786d;
 }
 
 .milestone-card__amount--upcoming {
@@ -336,19 +369,34 @@
 }
 
 .milestone-card__slug {
-  margin-top: 0.12rem;
-  font-size: 0.94rem;
-  color: #5b6b61;
+  margin-top: 0.3rem;
+  font-size: 0.85rem;
+  color: #607166;
   min-height: 1.2rem;
-  line-height: 1.2;
-  word-break: break-word;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.milestone-card__slug-host {
+  color: #4e5f54;
+}
+
+.milestone-card__slug-slash {
+  color: #8c998f;
+  padding-inline: 0.05rem;
+}
+
+.milestone-card__slug-path {
+  color: #627369;
 }
 
 .milestone-card__content-row {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.9rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.72rem;
 }
 
 .milestone-card__content-main {
@@ -367,6 +415,10 @@
 .milestone-card__actions {
   margin-top: auto;
   padding-top: 0.2rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.8rem;
 }
 
 .milestone-card__actions-left {
@@ -378,25 +430,25 @@
 
 @media (max-width: 980px) {
   .milestone-card__title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
 
-  .milestone-card__amount {
-    font-size: 1.15rem;
+  .milestone-card__amount-value {
+    font-size: 1.25rem;
   }
 
   .milestone-card__slug {
-    font-size: 0.88rem;
+    font-size: 0.82rem;
   }
 }
 
 @media (max-width: 560px) {
-  .milestone-card__content-row {
-    flex-direction: column;
+  .milestone-card__actions {
+    align-items: flex-start;
   }
 
   .milestone-card__qr {
-    align-self: flex-start;
+    align-self: flex-end;
   }
 }
 

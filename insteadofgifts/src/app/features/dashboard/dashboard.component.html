@@ -121,19 +121,18 @@
 
               <div class="milestone-card__content-row">
                 <div class="milestone-card__content-main">
-                  <a [routerLink]="['/campaigns', row.campaign.slug]" class="milestone-card__title">{{ row.campaign.title }}</a>
+                  <h3 class="milestone-card__title-wrap">
+                    <a [routerLink]="['/campaigns', row.campaign.slug]" class="milestone-card__title">{{ row.campaign.title }}</a>
+                  </h3>
 
-                  <p class="milestone-card__amount">{{ formatCurrency(row.totals.totalPence, row.campaign.currency) }} Raised</p>
-                  <p class="milestone-card__slug">{{ baseHost() }}/{{ row.campaign.slug }}</p>
-                </div>
-                <div [id]="'qr-' + row.campaign.slug" class="milestone-card__qr">
-                  <app-qr-code
-                    [url]="row.campaignUrl"
-                    [isPro]="row.campaign.isPro"
-                    [size]="120"
-                    [filename]="row.campaign.slug"
-                    [showDownload]="false"
-                  />
+                  <p class="milestone-card__amount">
+                    <span class="milestone-card__amount-value">{{ formatCurrency(row.totals.totalPence, row.campaign.currency) }}</span>
+                    <span class="milestone-card__amount-label">raised</span>
+                  </p>
+                  <p class="milestone-card__slug" [title]="baseHost() + '/' + row.campaign.slug">
+                    <span class="milestone-card__slug-host">{{ baseHost() }}</span><wbr />
+                    <span class="milestone-card__slug-slash">/</span><span class="milestone-card__slug-path">{{ row.campaign.slug }}</span>
+                  </p>
                 </div>
               </div>
 
@@ -155,6 +154,15 @@
                       Download QR
                     </app-button>
                   }
+                </div>
+                <div [id]="'qr-' + row.campaign.slug" class="milestone-card__qr">
+                  <app-qr-code
+                    [url]="row.campaignUrl"
+                    [isPro]="row.campaign.isPro"
+                    [size]="120"
+                    [filename]="row.campaign.slug"
+                    [showDownload]="false"
+                  />
                 </div>
               </div>
             </li>
