@@ -110,27 +110,40 @@
           </div>
 
           <!-- Fund use -->
-          <div class="field">
-            <p class="field__label mb-2">Fund Use</p>
-            <div class="field__choices" role="radiogroup" aria-label="Fund use">
-              <label class="field__choice">
+          <fieldset class="field field--fund-use">
+            <legend class="field__label mb-2">Fund use</legend>
+            <p class="field__hint field__hint--group">Choose how you would like to frame contributions.</p>
+            <div class="field__choices field__choices--cards">
+              <label class="field__choice-card">
                 <input
                   type="radio"
                   formControlName="fundUse"
                   value="educational"
                 />
-                <span>Educational</span>
+                <span class="field__choice-content">
+                  <span class="field__choice-title">Educational</span>
+                  <span class="field__choice-description">
+                    In celebrating this milestone, we are prioritizing future learning over physical gifts.
+                    Contributions toward education are deeply appreciated.
+                  </span>
+                </span>
               </label>
-              <label class="field__choice">
+              <label class="field__choice-card">
                 <input
                   type="radio"
                   formControlName="fundUse"
                   value="personal"
                 />
-                <span>Personal</span>
+                <span class="field__choice-content">
+                  <span class="field__choice-title">Personal</span>
+                  <span class="field__choice-description">
+                    In celebrating this milestone, we are focusing on growth and meaningful experiences rather
+                    than traditional gifts. Your support is truly appreciated.
+                  </span>
+                </span>
               </label>
             </div>
-          </div>
+          </fieldset>
 
           <!-- Target amount -->
           <div class="field">
