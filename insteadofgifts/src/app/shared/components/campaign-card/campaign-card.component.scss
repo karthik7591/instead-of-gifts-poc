@@ -64,7 +64,6 @@
 .campaign-card__cover {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
   object-fit: cover;
   transition: transform var(--transition-slow, 400ms ease);
 

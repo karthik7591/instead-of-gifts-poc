@@ -7,7 +7,7 @@ import { generateSlug, appendRandomSuffix } from '../utils/slug.util';
 /** Maximum retries when a generated slug is already taken. */
 const MAX_SLUG_RETRIES = 5;
 const DEFAULT_PRO_COVER_IMAGE_URL =
-  'https://images.unsplash.com/photo-1596419125026-0d4db48bc7de?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+  '/images/iog_campaign_image.jpeg';
 
 export interface UpdateCampaignInput {
   title: string;

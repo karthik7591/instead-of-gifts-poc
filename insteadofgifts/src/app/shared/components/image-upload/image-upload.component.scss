@@ -21,7 +21,6 @@
   justify-content: center;
   gap: 0.25rem;
   width: 100%;
-  aspect-ratio: 16 / 7;
   border: 2px dashed var(--color-mint, #C3DEA7);
   border-radius: var(--radius-lg, 0.75rem);
   background: var(--color-pale-green, #EAF4DF);
@@ -103,8 +102,7 @@
 .img-preview__img {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 7;
-  object-fit: cover;
+  object-fit: contain;
   transition: opacity 200ms ease;
 
   &--dim { opacity: 0.45; }
