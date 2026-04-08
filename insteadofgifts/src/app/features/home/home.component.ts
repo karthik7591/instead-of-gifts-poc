@@ -14,6 +14,10 @@ import {
   lucideStar,
   lucideUsers,
   lucideHeart,
+  lucideCake,
+  lucideTrees,
+  lucideGraduationCap,
+  lucidePalmtree,
 } from '@ng-icons/lucide';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 
@@ -32,6 +36,11 @@ export interface PricingFeature {
   proNote:  string;
 }
 
+export interface Occasion {
+  icon:  string;
+  label: string;
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -48,6 +57,10 @@ export interface PricingFeature {
       lucideStar,
       lucideUsers,
       lucideHeart,
+      lucideCake,
+      lucideTrees,
+      lucideGraduationCap,
+      lucidePalmtree,
     }),
   ],
   templateUrl: './home.component.html',
@@ -76,8 +89,15 @@ export class HomeComponent {
     },
   ];
 
+  readonly occasions: Occasion[] = [
+    { icon: 'lucideCake',           label: 'Birthdays'  },
+    { icon: 'lucideTrees',          label: 'Holidays'   },
+    { icon: 'lucideGraduationCap',  label: 'Graduation' },
+    { icon: 'lucidePalmtree',       label: 'Retirement' },
+  ];
+
   readonly pricingFeatures: PricingFeature[] = [
-    { label: 'Gift campaigns',             freeNote: 'Up to 3',  proNote: 'Unlimited'  },
+    { label: 'Campaign Pro upgrade',       freeNote: null,       proNote: '$9.99 each'  },
     { label: 'Shareable campaign link',    freeNote: '',         proNote: ''           },
     { label: 'Contribution tracking',      freeNote: '',         proNote: ''           },
     { label: 'Cover photos',               freeNote: null,       proNote: ''           },

@@ -1,5 +1,7 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
 
@@ -28,6 +30,7 @@ export interface CampaignTotals {
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
   private readonly toastSvc = inject(ToastService);
+  private readonly http = inject(HttpClient);
 
   readonly client: SupabaseClient = createClient(
     environment.supabase.url,
@@ -75,6 +78,19 @@ export class SupabaseService {
     });
     if (error) {
       throw error;
+    }
+  }
+
+  async confirmPayPalContribution(orderId: string): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.http.post(
+          `${environment.apiUrl}/confirm-paypal-contribution`,
+          { orderId },
+        )
+      );
+    } catch (error: unknown) {
+      throw normalizePayPalConfirmError(error);
     }
   }
 
@@ -142,4 +158,27 @@ export class SupabaseService {
     }));
   }
 
+}
+
+function normalizePayPalConfirmError(error: unknown): Error {
+  if (error instanceof HttpErrorResponse) {
+    const body = error.error;
+    if (body && typeof body === 'object' && 'error' in body && typeof body.error === 'string') {
+      return new Error(body.error);
+    }
+
+    if (typeof body === 'string' && body.trim()) {
+      return new Error(body);
+    }
+
+    if (error.status === 0) {
+      return new Error('Could not reach the PayPal confirmation Edge Function. Check deployment and network access.');
+    }
+
+    if (error.status === 404) {
+      return new Error('PayPal confirmation Edge Function not found. Deploy `confirm-paypal-contribution` first.');
+    }
+  }
+
+  return error instanceof Error ? error : new Error('PayPal confirmation failed.');
 }

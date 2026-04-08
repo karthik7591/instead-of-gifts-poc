@@ -13,6 +13,7 @@
             </svg>
             Create New Celebration
           </app-button>
+          <span class="section-header__count">Credits: {{ campaignCredits() }}</span>
           <app-button variant="secondary" size="md" type="button" [loading]="signingOut()" (clicked)="onLogout()">
             Logout
           </app-button>
@@ -72,16 +73,16 @@
     }
   }
 
-  @if (!isPro()) {
+  @if (campaignCredits() === 0) {
     <div class="upgrade-banner" role="banner" aria-label="Upgrade to Pro">
       <div class="upgrade-banner__inner">
         <div class="upgrade-banner__text">
           <svg class="upgrade-banner__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.83-4.401z" clip-rule="evenodd"/>
           </svg>
-          <span><strong>Unlock Pro features</strong> with QR downloads, cover photos, and more for $9.99/month.</span>
+          <span><strong>Buy campaign access</strong> before creating your next celebration. One payment adds one campaign credit.</span>
         </div>
-        <a class="upgrade-banner__cta" [routerLink]="['/pro', 'upgrade']">Upgrade to Pro</a>
+        <a class="upgrade-banner__cta" [routerLink]="['/pro', 'upgrade']">Pay $9.99</a>
       </div>
     </div>
   }

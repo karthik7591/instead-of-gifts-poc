@@ -1,9 +1,7 @@
 <div class="edit-page">
   <div class="edit-page__inner">
-
-    <!-- ── Loading / error states ───────────────────────────────────────── -->
     @if (loading()) {
-      <p class="sr-only" role="status">Loading campaign…</p>
+      <p class="sr-only" role="status">Loading campaign...</p>
       <div class="edit-page__loading" aria-hidden="true">
         <div class="skeleton skeleton--title"></div>
         <div class="skeleton skeleton--card"></div>
@@ -21,8 +19,6 @@
     }
 
     @if (!loading() && !loadError() && campaign()) {
-
-      <!-- ── Page header ──────────────────────────────────────────────── -->
       <div class="mb-8">
         <a [routerLink]="['/dashboard']" class="edit-page__back">
           <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -37,260 +33,242 @@
         </p>
       </div>
 
-      <!-- ── Form card ──────────────────────────────────────────────────── -->
       <form
         [formGroup]="form"
         (ngSubmit)="onSubmit()"
         class="edit-page__card"
         novalidate
       >
-
         <div class="form-columns">
+          <section class="form-section">
+            <h2 class="form-section__title">Campaign details</h2>
 
-        <!-- ════════════════════════════════════════════════════════════
-             SECTION 1 — Campaign basics
-        ════════════════════════════════════════════════════════════ -->
-        <section class="form-section">
-          <h2 class="form-section__title">Campaign details</h2>
-
-          <!-- Title -->
-          <div class="field">
-            <label for="title" class="field__label">
-              Campaign title
-              <span class="text-error" aria-hidden="true">*</span>
-              <span class="sr-only">(required)</span>
-            </label>
-            <input
-              id="title"
-              type="text"
-              formControlName="title"
-              [disabled]="hasContributions()"
-              maxlength="80"
-              placeholder="e.g. Alice's 30th Birthday"
-              class="field__input"
-              [class.field__input--error]="hasError('title', 'required') || hasError('title', 'maxlength')"
-              [attr.aria-invalid]="(hasError('title', 'required') || hasError('title', 'maxlength')) || null"
-              aria-describedby="title-errors"
-              autocomplete="off"
-            />
-            <div id="title-errors" aria-live="polite">
-              @if (hasError('title', 'required')) {
-                <p class="field__error" role="alert">Title is required.</p>
-              }
-              @if (hasError('title', 'maxlength')) {
-                <p class="field__error" role="alert">Title must be 80 characters or fewer.</p>
-              }
-            </div>
-            <p class="field__counter" aria-live="polite" aria-atomic="true">
-              {{ form.controls.title.value.length }}&nbsp;/&nbsp;80
-            </p>
-          </div>
-
-          <!-- Description -->
-          <div class="field">
-            <label for="description" class="field__label">
-              Description <span class="field__optional">(optional)</span>
-            </label>
-            <textarea
-              id="description"
-              formControlName="description"
-              rows="4"
-              maxlength="500"
-              placeholder="Tell guests what this campaign is for…"
-              class="field__input field__input--textarea"
-              [class.field__input--error]="hasError('description', 'maxlength')"
-              [attr.aria-invalid]="hasError('description', 'maxlength') || null"
-              aria-describedby="description-errors"
-            ></textarea>
-            <div id="description-errors" aria-live="polite">
-              @if (hasError('description', 'maxlength')) {
-                <p class="field__error" role="alert">Description must be 500 characters or fewer.</p>
-              }
-            </div>
-            <p class="field__counter" aria-live="polite" aria-atomic="true">{{ descriptionLength }}&nbsp;/&nbsp;500</p>
-          </div>
-
-          <!-- Fund use -->
-          <fieldset class="field field--fund-use">
-            <legend class="field__label mb-2">Fund use</legend>
-            <p class="field__hint field__hint--group">Choose how you would like to frame contributions.</p>
-            <div class="field__choices field__choices--cards">
-              <label class="field__choice-card">
-                <input
-                  type="radio"
-                  formControlName="fundUse"
-                  value="educational"
-                />
-                <span class="field__choice-content">
-                  <span class="field__choice-title">Educational</span>
-                  <span class="field__choice-description">
-                    In celebrating this milestone, we are prioritizing future learning over physical gifts.
-                    Contributions toward education are deeply appreciated.
-                  </span>
-                </span>
+            <div class="field">
+              <label for="title" class="field__label">
+                Campaign title
+                <span class="text-error" aria-hidden="true">*</span>
+                <span class="sr-only">(required)</span>
               </label>
-              <label class="field__choice-card">
-                <input
-                  type="radio"
-                  formControlName="fundUse"
-                  value="personal"
-                />
-                <span class="field__choice-content">
-                  <span class="field__choice-title">Personal</span>
-                  <span class="field__choice-description">
-                    In celebrating this milestone, we are focusing on growth and meaningful experiences rather
-                    than traditional gifts. Your support is truly appreciated.
-                  </span>
-                </span>
-              </label>
-            </div>
-          </fieldset>
-
-          <!-- Target amount -->
-          <div class="field">
-            <label for="targetAmount" class="field__label">
-              Fundraising goal <span class="field__optional">(optional)</span>
-            </label>
-            <div class="field__currency-wrap">
-              <span class="field__currency-symbol" aria-hidden="true">$</span>
               <input
-                id="targetAmount"
-                type="number"
-                formControlName="targetAmount"
-                min="1"
-                step="1"
-                placeholder="0"
-                class="field__input field__input--currency"
-                [class.field__input--error]="hasError('targetAmount', 'positiveAmount')"
-                [attr.aria-invalid]="hasError('targetAmount', 'positiveAmount') || null"
-                aria-describedby="targetAmount-errors"
+                id="title"
+                type="text"
+                formControlName="title"
+                [disabled]="hasContributions()"
+                maxlength="80"
+                placeholder="e.g. Alice's 30th Birthday"
+                class="field__input"
+                [class.field__input--error]="hasError('title', 'required') || hasError('title', 'maxlength')"
+                [attr.aria-invalid]="(hasError('title', 'required') || hasError('title', 'maxlength')) || null"
+                aria-describedby="title-errors"
+                autocomplete="off"
               />
-            </div>
-            <div id="targetAmount-errors" aria-live="polite">
-              @if (hasError('targetAmount', 'positiveAmount')) {
-                <p class="field__error" role="alert">Goal must be at least $1.</p>
-              }
-            </div>
-            <p class="field__hint">Leave blank for an open-ended campaign.</p>
-          </div>
-
-          <!-- Deadline -->
-          <div class="field">
-            <label for="deadline" class="field__label">
-              End date <span class="field__optional">(optional)</span>
-            </label>
-            <input
-              id="deadline"
-              type="date"
-              formControlName="deadline"
-              [disabled]="hasContributions()"
-              [min]="todayIso"
-              class="field__input field__input--date"
-              [class.field__input--error]="hasError('deadline', 'pastDate')"
-              [attr.aria-invalid]="hasError('deadline', 'pastDate') || null"
-              aria-describedby="deadline-errors"
-            />
-            <div id="deadline-errors" aria-live="polite">
-              @if (hasError('deadline', 'pastDate')) {
-                <p class="field__error" role="alert">Please choose a future date.</p>
-              }
-            </div>
-          </div>
-        </section>
-
-        <!-- ════════════════════════════════════════════════════════════
-             SECTION 2 — Pro features
-        ════════════════════════════════════════════════════════════ -->
-        <section class="form-section">
-          <div class="flex items-center gap-2 mb-5">
-            <h2 class="form-section__title mb-0">Pro features</h2>
-            @if (isPro()) {
-              <span class="badge-pro">
-                <svg class="w-3 h-3 mr-1" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <path d="M8 1l2.163 4.279L15 6.09l-3.5 3.326.826 4.693L8 11.75l-4.326 2.359.826-4.693L1 6.09l4.837-.811L8 1z"/>
-                </svg>
-                Pro
-              </span>
-            }
-          </div>
-
-          <!-- ── UNLOCKED (Pro user) ─────────────────────────────────── -->
-          @if (isPro()) {
-
-            <!-- Custom message -->
-            <div class="field">
-              <label for="customMessage" class="field__label">Custom message</label>
-              <textarea
-                id="customMessage"
-                formControlName="customMessage"
-                rows="4"
-                maxlength="1000"
-                placeholder="Add a personal note shown to contributors…"
-                class="field__input field__input--textarea"
-              ></textarea>
-              <p class="field__counter">{{ customMessageLength }}&nbsp;/&nbsp;1000</p>
-            </div>
-
-            <!-- Cover image — immediate-upload mode (campaignId is known) -->
-            <div class="field">
-              <label class="field__label">Cover image</label>
-              <app-image-upload
-                [campaignId]="campaign()!.id"
-                [existingUrl]="campaign()!.coverImageUrl ?? null"
-              />
-            </div>
-
-          <!-- ── LOCKED (Free user) ────────────────────────────────── -->
-          } @else {
-
-            <div class="locked-section">
-              <div class="locked-section__header">
-                <svg class="w-5 h-5 text-pro" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/>
-                </svg>
-                <span class="text-sm font-semibold text-text-mid">Pro features — locked</span>
+              <div id="title-errors" aria-live="polite">
+                @if (hasError('title', 'required')) {
+                  <p class="field__error" role="alert">Title is required.</p>
+                }
+                @if (hasError('title', 'maxlength')) {
+                  <p class="field__error" role="alert">Title must be 80 characters or fewer.</p>
+                }
               </div>
+              <p class="field__counter" aria-live="polite" aria-atomic="true">
+                {{ form.controls.title.value.length }}&nbsp;/&nbsp;80
+              </p>
+            </div>
 
-              <ul class="locked-section__features">
-                <li class="locked-feature">
-                  <div class="locked-feature__field">
-                    <span class="locked-feature__label">Custom message</span>
-                    <div class="locked-feature__placeholder locked-feature__placeholder--tall"></div>
-                  </div>
-                </li>
-                <li class="locked-feature">
-                  <div class="locked-feature__field">
-                    <span class="locked-feature__label">Cover image</span>
-                    <div class="locked-feature__placeholder locked-feature__placeholder--cover"></div>
-                  </div>
-                </li>
-                <li class="locked-feature">
-                  <div class="locked-feature__field">
-                    <span class="locked-feature__label">QR code sharing</span>
-                    <div class="locked-feature__placeholder locked-feature__placeholder--qr"></div>
-                  </div>
-                </li>
-              </ul>
+            <div class="field">
+              <label for="description" class="field__label">
+                Description <span class="field__optional">(optional)</span>
+              </label>
+              <textarea
+                id="description"
+                formControlName="description"
+                rows="4"
+                maxlength="500"
+                placeholder="Tell guests what this campaign is for..."
+                class="field__input field__input--textarea"
+                [class.field__input--error]="hasError('description', 'maxlength')"
+                [attr.aria-invalid]="hasError('description', 'maxlength') || null"
+                aria-describedby="description-errors"
+              ></textarea>
+              <div id="description-errors" aria-live="polite">
+                @if (hasError('description', 'maxlength')) {
+                  <p class="field__error" role="alert">Description must be 500 characters or fewer.</p>
+                }
+              </div>
+              <p class="field__counter" aria-live="polite" aria-atomic="true">{{ descriptionLength }}&nbsp;/&nbsp;500</p>
+            </div>
 
-              <div class="locked-section__cta">
-                <p class="text-sm text-text-muted mb-3">
-                  Unlock custom messages, cover images, and QR code sharing with Pro.
-                </p>
-                <app-button variant="pro" size="md" type="button" routerLink="/pro">
-                  <svg class="w-4 h-4 mr-1" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <fieldset class="field field--fund-use">
+              <legend class="field__label mb-2">Fund use</legend>
+              <p class="field__hint field__hint--group">Choose how you would like to frame contributions.</p>
+              <div class="field__choices field__choices--cards">
+                <label class="field__choice-card">
+                  <input
+                    type="radio"
+                    formControlName="fundUse"
+                    value="educational"
+                  />
+                  <span class="field__choice-content">
+                    <span class="field__choice-title">Educational</span>
+                    <span class="field__choice-description">
+                      In celebrating this milestone, we are prioritizing future learning over physical gifts.
+                      Contributions toward education are deeply appreciated.
+                    </span>
+                  </span>
+                </label>
+                <label class="field__choice-card">
+                  <input
+                    type="radio"
+                    formControlName="fundUse"
+                    value="personal"
+                  />
+                  <span class="field__choice-content">
+                    <span class="field__choice-title">Personal</span>
+                    <span class="field__choice-description">
+                      In celebrating this milestone, we are focusing on growth and meaningful experiences rather
+                      than traditional gifts. Your support is truly appreciated.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="field">
+              <label for="targetAmount" class="field__label">
+                Fundraising goal <span class="field__optional">(optional)</span>
+              </label>
+              <div class="field__currency-wrap">
+                <span class="field__currency-symbol" aria-hidden="true">$</span>
+                <input
+                  id="targetAmount"
+                  type="number"
+                  formControlName="targetAmount"
+                  min="1"
+                  step="1"
+                  placeholder="0"
+                  class="field__input field__input--currency"
+                  [class.field__input--error]="hasError('targetAmount', 'positiveAmount')"
+                  [attr.aria-invalid]="hasError('targetAmount', 'positiveAmount') || null"
+                  aria-describedby="targetAmount-errors"
+                />
+              </div>
+              <div id="targetAmount-errors" aria-live="polite">
+                @if (hasError('targetAmount', 'positiveAmount')) {
+                  <p class="field__error" role="alert">Goal must be at least $1.</p>
+                }
+              </div>
+              <p class="field__hint">Leave blank for an open-ended campaign.</p>
+            </div>
+
+            <div class="field">
+              <label for="deadline" class="field__label">
+                End date <span class="field__optional">(optional)</span>
+              </label>
+              <input
+                id="deadline"
+                type="date"
+                formControlName="deadline"
+                [disabled]="hasContributions()"
+                [min]="todayIso"
+                class="field__input field__input--date"
+                [class.field__input--error]="hasError('deadline', 'pastDate')"
+                [attr.aria-invalid]="hasError('deadline', 'pastDate') || null"
+                aria-describedby="deadline-errors"
+              />
+              <div id="deadline-errors" aria-live="polite">
+                @if (hasError('deadline', 'pastDate')) {
+                  <p class="field__error" role="alert">Please choose a future date.</p>
+                }
+              </div>
+            </div>
+          </section>
+
+          <section class="form-section">
+            <div class="flex items-center gap-2 mb-5">
+              <h2 class="form-section__title mb-0">Campaign Pro</h2>
+              @if (campaign()!.isPro) {
+                <span class="badge-pro">
+                  <svg class="w-3 h-3 mr-1" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                     <path d="M8 1l2.163 4.279L15 6.09l-3.5 3.326.826 4.693L8 11.75l-4.326 2.359.826-4.693L1 6.09l4.837-.811L8 1z"/>
                   </svg>
-                  Upgrade to Pro
-                </app-button>
-              </div>
+                  Active
+                </span>
+              }
             </div>
 
-          }
-        </section>
+            @if (campaign()!.isPro) {
+              <div class="field">
+                <label for="customMessage" class="field__label">Custom message</label>
+                <textarea
+                  id="customMessage"
+                  formControlName="customMessage"
+                  rows="4"
+                  maxlength="1000"
+                  placeholder="Add a personal note shown to contributors..."
+                  class="field__input field__input--textarea"
+                ></textarea>
+                <p class="field__counter">{{ customMessageLength }}&nbsp;/&nbsp;1000</p>
+              </div>
 
-        </div><!-- /.form-columns -->
+              <div class="field">
+                <label class="field__label">Cover image</label>
+                <app-image-upload
+                  [campaignId]="campaign()!.id"
+                  [existingUrl]="campaign()!.coverImageUrl ?? null"
+                />
+              </div>
+            } @else {
+              <div class="locked-section">
+                <div class="locked-section__header">
+                  <svg class="w-5 h-5 text-pro" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/>
+                  </svg>
+                  <span class="text-sm font-semibold text-text-mid">One-time upgrade</span>
+                </div>
 
-        <!-- ── Submit error ──────────────────────────────────────── -->
+                <ul class="locked-section__features">
+                  <li class="locked-feature">
+                    <div class="locked-feature__field">
+                      <span class="locked-feature__label">Custom message</span>
+                      <div class="locked-feature__placeholder locked-feature__placeholder--tall"></div>
+                    </div>
+                  </li>
+                  <li class="locked-feature">
+                    <div class="locked-feature__field">
+                      <span class="locked-feature__label">Cover image</span>
+                      <div class="locked-feature__placeholder locked-feature__placeholder--cover"></div>
+                    </div>
+                  </li>
+                  <li class="locked-feature">
+                    <div class="locked-feature__field">
+                      <span class="locked-feature__label">QR code sharing</span>
+                      <div class="locked-feature__placeholder locked-feature__placeholder--qr"></div>
+                    </div>
+                  </li>
+                </ul>
+
+                <div class="locked-section__cta">
+                  <p class="text-sm text-text-muted mb-3">
+                    Unlock custom messages, cover images, and QR downloads for this campaign with a one-time $9.99 payment.
+                  </p>
+                  <app-button
+                    variant="pro"
+                    size="md"
+                    type="button"
+                    [routerLink]="['/pro', 'upgrade']"
+                    [queryParams]="{ campaignId: campaign()!.id }"
+                  >
+                    <svg class="w-4 h-4 mr-1" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                      <path d="M8 1l2.163 4.279L15 6.09l-3.5 3.326.826 4.693L8 11.75l-4.326 2.359.826-4.693L1 6.09l4.837-.811L8 1z"/>
+                    </svg>
+                    Upgrade this campaign
+                  </app-button>
+                </div>
+              </div>
+            }
+          </section>
+        </div>
+
         @if (submitError()) {
           <div class="submit-error" role="alert">
             <svg class="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -300,7 +278,6 @@
           </div>
         }
 
-        <!-- ── Form actions ──────────────────────────────────────── -->
         <div class="form-actions">
           <app-button
             variant="ghost"
@@ -319,9 +296,7 @@
             Save changes
           </app-button>
         </div>
-
       </form>
     }
-
   </div>
 </div>

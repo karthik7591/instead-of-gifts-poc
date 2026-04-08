@@ -21,13 +21,16 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { startWith } from 'rxjs';
 
 import { CampaignService } from '../../core/services/campaign.service';
+import { SupabaseService } from '../../core/services/supabase.service';
 import { StripeService } from '../../core/services/stripe.service';
+import { PayPalService } from '../../core/services/paypal.service';
+import { PayPalSdkService, PayPalNamespace } from '../../core/services/paypal-sdk.service';
 import { Campaign } from '../../core/models/campaign.model';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 
-/** Preset quick-select amounts in major currency units ($). */
 const PRESET_AMOUNTS = [5, 10, 25, 50] as const;
 type PresetAmount = (typeof PRESET_AMOUNTS)[number];
+type PaymentMethod = 'stripe' | 'paypal' | 'venmo';
 
 interface ContributeForm {
   name:        FormControl<string>;
@@ -47,27 +50,26 @@ export class ContributeComponent implements OnInit {
   private readonly route       = inject(ActivatedRoute);
   private readonly fb          = inject(FormBuilder);
   private readonly campaignSvc = inject(CampaignService);
+  private readonly supabaseSvc = inject(SupabaseService);
   private readonly stripeSvc   = inject(StripeService);
+  private readonly paypalSvc   = inject(PayPalService);
+  private readonly paypalSdkSvc = inject(PayPalSdkService);
   private readonly destroyRef  = inject(DestroyRef);
   private readonly platformId  = inject(PLATFORM_ID);
 
-  // ── Preset amounts exposed to the template ────────────────────────────────
   readonly presets = PRESET_AMOUNTS;
 
-  // ── Campaign state ────────────────────────────────────────────────────────
-  readonly campaign    = signal<Campaign | null>(null);
-  readonly loadError   = signal<string | null>(null);
-  readonly loading     = signal(true);
+  readonly campaign  = signal<Campaign | null>(null);
+  readonly loadError = signal<string | null>(null);
+  readonly loading   = signal(true);
 
-  // ── Amount selection ──────────────────────────────────────────────────────
   readonly selectedPreset  = signal<PresetAmount | 'custom'>(10);
   readonly customAmountRaw = signal('');
 
-  /** Effective amount in cents — drives all validation and the Stripe call. */
   readonly amountPence = computed(() => {
     if (this.selectedPreset() === 'custom') {
-      const v = parseFloat(this.customAmountRaw());
-      return isNaN(v) || v <= 0 ? 0 : Math.round(v * 100);
+      const value = parseFloat(this.customAmountRaw());
+      return isNaN(value) || value <= 0 ? 0 : Math.round(value * 100);
     }
     return (this.selectedPreset() as PresetAmount) * 100;
   });
@@ -75,25 +77,24 @@ export class ContributeComponent implements OnInit {
   readonly amountValid   = computed(() => this.amountPence() >= 100);
   readonly amountTouched = signal(false);
 
-  /** True when the campaign's organiser has completed Stripe Connect onboarding. */
   readonly organiserDirectPay = computed(
     () => this.campaign()?.stripeOnboardingComplete ?? false
   );
 
-  // ── Payment state ─────────────────────────────────────────────────────────
-  readonly paying       = signal(false);
-  readonly payError     = signal<string | null>(null);
-  /** Set when Stripe redirects back with ?payment_cancelled=true. */
-  readonly wasCancelled = signal(false);
+  readonly paying        = signal(false);
+  readonly payError      = signal<string | null>(null);
+  readonly paymentMethod = signal<PaymentMethod>('stripe');
+  readonly wasCancelled  = signal(false);
+  readonly venmoEligible = signal(false);
+  readonly venmoLoading  = signal(false);
+  readonly venmoRendered = signal(false);
+  private venmoRenderToken = 0;
 
-  // ── Contributor form ──────────────────────────────────────────────────────
   readonly form: FormGroup<ContributeForm> = this.fb.group({
     name:        this.fb.nonNullable.control(''),
     message:     this.fb.nonNullable.control('', [Validators.maxLength(200)]),
     isAnonymous: this.fb.nonNullable.control(false),
   });
-
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   async ngOnInit(): Promise<void> {
     this.form.controls.isAnonymous.valueChanges
@@ -112,24 +113,26 @@ export class ContributeComponent implements OnInit {
       });
 
     const slug = this.route.snapshot.paramMap.get('slug') ?? '';
-
-    // Detect Stripe cancellation redirect
     const cancelled = this.route.snapshot.queryParamMap.get('payment_cancelled');
     if (cancelled === 'true') this.wasCancelled.set(true);
 
     try {
-      const c = await this.campaignSvc.getCampaignBySlug(slug);
-      if (!c) { this.loadError.set('Campaign not found.'); return; }
-      if (c.status === 'closed') { this.loadError.set('This campaign has ended.'); return; }
-      this.campaign.set(c);
+      const campaign = await this.campaignSvc.getCampaignBySlug(slug);
+      if (!campaign) {
+        this.loadError.set('Campaign not found.');
+        return;
+      }
+      if (campaign.status === 'closed') {
+        this.loadError.set('This campaign has ended.');
+        return;
+      }
+      this.campaign.set(campaign);
     } catch {
       this.loadError.set('Failed to load campaign. Please try again.');
     } finally {
       this.loading.set(false);
     }
   }
-
-  // ── Amount selection ──────────────────────────────────────────────────────
 
   selectPreset(amount: PresetAmount): void {
     this.selectedPreset.set(amount);
@@ -147,7 +150,15 @@ export class ContributeComponent implements OnInit {
     this.selectedPreset.set('custom');
   }
 
-  // ── Submit ────────────────────────────────────────────────────────────────
+  selectPaymentMethod(method: PaymentMethod): void {
+    this.paymentMethod.set(method);
+    this.payError.set(null);
+    this.wasCancelled.set(false);
+    if (method === 'venmo') {
+      this.venmoRendered.set(false);
+      setTimeout(() => void this.ensureVenmoButton());
+    }
+  }
 
   async onSubmit(): Promise<void> {
     this.amountTouched.set(true);
@@ -155,8 +166,8 @@ export class ContributeComponent implements OnInit {
 
     if (!this.amountValid() || this.form.invalid || this.paying()) return;
 
-    const c = this.campaign();
-    if (!c) return;
+    const campaign = this.campaign();
+    if (!campaign) return;
 
     this.paying.set(true);
     this.payError.set(null);
@@ -164,26 +175,40 @@ export class ContributeComponent implements OnInit {
 
     const { name, message, isAnonymous } = this.form.getRawValue();
     const contributorName = isAnonymous ? 'Anonymous' : name.trim();
-
     const origin = isPlatformBrowser(this.platformId) ? window.location.origin : '';
+    const provider = this.paymentMethod();
+    const successBaseUrl =
+      `${origin}/campaigns/${campaign.slug}?contributed=true&provider=${provider}`;
+    const cancelUrl =
+      `${origin}/contribute/${campaign.slug}?payment_cancelled=true&provider=${provider}`;
 
     try {
-      await this.stripeSvc.redirectToCheckout({
-        campaignId:      c.id,
-        amountPence:     this.amountPence(),
-        contributorName,
-        message:         message.trim(),
-        isAnonymous,
-        // {CHECKOUT_SESSION_ID} is replaced by Stripe with the real session ID on redirect.
-        // campaign-view.component reads it and calls confirm-contribution to write the DB row.
-        successUrl: `${origin}/campaigns/${c.slug}?contributed=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl:  `${origin}/contribute/${c.slug}?payment_cancelled=true`,
-      });
-      // If redirectToCheckout resolves without navigating away, the backend
-      // failed to return a URL — treat as error.
+      if (provider === 'venmo') {
+        throw new Error('Use the Venmo button below to continue.');
+      } else if (provider === 'paypal') {
+        await this.paypalSvc.redirectToCheckout({
+          campaignId: campaign.id,
+          amountPence: this.amountPence(),
+          contributorName,
+          message: message.trim(),
+          isAnonymous,
+          successUrl: successBaseUrl,
+          cancelUrl,
+        });
+      } else {
+        await this.stripeSvc.redirectToCheckout({
+          campaignId: campaign.id,
+          amountPence: this.amountPence(),
+          contributorName,
+          message: message.trim(),
+          isAnonymous,
+          successUrl: `${successBaseUrl}&session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl,
+        });
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Payment could not be started.';
-      this.payError.set(msg);
+      const messageText = err instanceof Error ? err.message : 'Payment could not be started.';
+      this.payError.set(messageText);
       this.paying.set(false);
     }
   }
@@ -193,14 +218,123 @@ export class ContributeComponent implements OnInit {
     this.wasCancelled.set(false);
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
   get messageLength(): number {
     return this.form.controls.message.value.length;
   }
 
   hasError(ctrl: keyof ContributeForm, err: string): boolean {
-    const c = this.form.get(ctrl);
-    return !!(c?.touched && c.hasError(err));
+    const control = this.form.get(ctrl);
+    return !!(control?.touched && control.hasError(err));
+  }
+
+  get paymentButtonLabel(): string {
+    if (this.paymentMethod() === 'paypal') return 'Pay securely with PayPal';
+    if (this.paymentMethod() === 'venmo') return 'Continue with Venmo';
+    return 'Pay securely with Stripe';
+  }
+
+  async ensureVenmoButton(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId) || this.venmoRendered() || this.venmoLoading()) return;
+
+    this.venmoLoading.set(true);
+    this.payError.set(null);
+    const renderToken = ++this.venmoRenderToken;
+
+    try {
+      const paypal = await this.paypalSdkSvc.loadSdk();
+      if (renderToken !== this.venmoRenderToken) return;
+
+      const buttons = this.createVenmoButtons(paypal);
+      this.venmoEligible.set(buttons.isEligible());
+
+      if (!buttons.isEligible()) {
+        this.venmoLoading.set(false);
+        return;
+      }
+
+      const container = document.getElementById('venmo-button-container');
+      if (!container) {
+        this.venmoLoading.set(false);
+        return;
+      }
+
+      container.innerHTML = '';
+      await buttons.render(container);
+      if (renderToken !== this.venmoRenderToken) return;
+      this.venmoRendered.set(true);
+    } catch (error: unknown) {
+      this.payError.set(error instanceof Error ? error.message : 'Failed to load Venmo.');
+    } finally {
+      this.venmoLoading.set(false);
+    }
+  }
+
+  private createVenmoButtons(paypal: PayPalNamespace) {
+    return paypal.Buttons({
+      fundingSource: paypal.FUNDING.VENMO,
+      style: {
+        layout: 'vertical',
+        color: 'blue',
+        shape: 'rect',
+        label: 'pay',
+      },
+      createOrder: async () => {
+        this.amountTouched.set(true);
+        this.form.markAllAsTouched();
+        this.payError.set(null);
+        this.wasCancelled.set(false);
+
+        if (!this.amountValid() || this.form.invalid) {
+          throw new Error('Enter a valid amount and contributor details first.');
+        }
+
+        const campaign = this.campaign();
+        if (!campaign) {
+          throw new Error('Campaign not found.');
+        }
+
+        const { name, message, isAnonymous } = this.form.getRawValue();
+        const contributorName = isAnonymous ? 'Anonymous' : name.trim();
+        const origin = window.location.origin;
+        const successUrl = `${origin}/campaigns/${campaign.slug}?contributed=true&provider=venmo`;
+        const cancelUrl = `${origin}/contribute/${campaign.slug}?payment_cancelled=true&provider=venmo`;
+
+        const response = await this.paypalSvc.createOrder({
+          campaignId: campaign.id,
+          amountPence: this.amountPence(),
+          contributorName,
+          message: message.trim(),
+          isAnonymous,
+          successUrl,
+          cancelUrl,
+        });
+
+        if (!response?.orderId) {
+          throw new Error('Venmo order ID missing from response.');
+        }
+
+        return response.orderId;
+      },
+      onApprove: async (data) => {
+        const orderId = data.orderID;
+        if (!orderId) {
+          throw new Error('Venmo order ID missing after approval.');
+        }
+
+        const campaign = this.campaign();
+        if (!campaign) {
+          throw new Error('Campaign not found.');
+        }
+
+        await this.supabaseSvc.confirmPayPalContribution(orderId);
+        window.location.href = `${window.location.origin}/campaigns/${campaign.slug}?contributed=true&provider=venmo&order_id=${encodeURIComponent(orderId)}`;
+      },
+      onCancel: () => {
+        this.wasCancelled.set(true);
+      },
+      onError: (error) => {
+        this.payError.set(error instanceof Error ? error.message : 'Venmo checkout failed.');
+      },
+    });
   }
 }

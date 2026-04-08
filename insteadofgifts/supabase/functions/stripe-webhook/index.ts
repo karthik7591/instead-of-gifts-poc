@@ -181,6 +181,7 @@ async function activateProSubscription(
         id:                     userId,
         is_pro:                 true,
         stripe_subscription_id: subscriptionId ?? null,
+        pro_payment_provider:   'stripe',
         pro_since:              new Date().toISOString(),
       },
       { onConflict: 'id' }
@@ -202,7 +203,7 @@ async function revokeProSubscription(sub: Stripe.Subscription): Promise<void> {
 
   const { error } = await supabase
     .from('user_profiles')
-    .update({ is_pro: false, stripe_subscription_id: null })
+    .update({ is_pro: false, stripe_subscription_id: null, pro_payment_provider: null })
     .eq('stripe_subscription_id', sub.id);
 
   if (error) {
@@ -258,10 +259,12 @@ async function upsertContributionFromSession(
         contributor_name: contributorName,
         message,
         is_anonymous:     isAnonymous,
+        payment_provider: 'stripe',
+        payment_reference: stripePiId,
         stripe_pi_id:     stripePiId,
         status:           'succeeded',
       },
-      { onConflict: 'stripe_pi_id' }
+      { onConflict: 'payment_provider,payment_reference' }
     )
     .select('id, campaign_id, amount')
     .maybeSingle();
@@ -308,10 +311,12 @@ async function upsertContributionFromPaymentIntent(
         contributor_name: contributorName,
         message,
         is_anonymous: isAnonymous,
+        payment_provider: 'stripe',
+        payment_reference: pi.id,
         stripe_pi_id: pi.id,
         status: 'succeeded',
       },
-      { onConflict: 'stripe_pi_id' }
+      { onConflict: 'payment_provider,payment_reference' }
     )
     .select('id, campaign_id, amount')
     .maybeSingle();

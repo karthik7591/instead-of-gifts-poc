@@ -76,11 +76,13 @@ export class CampaignViewComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const slug = this.route.snapshot.paramMap.get('id') ?? '';
 
-    // Show thank-you popup when Stripe redirects back after a successful payment.
-    // Read session_id BEFORE stripping query params — it's the Stripe Checkout Session ID
-    // injected by {CHECKOUT_SESSION_ID} in the success URL.
+    // Show thank-you popup when a payment provider redirects back after success.
     const wasContributed = this.route.snapshot.queryParamMap.get('contributed') === 'true';
+    const provider       = this.route.snapshot.queryParamMap.get('provider') ?? 'stripe';
     const sessionId      = this.route.snapshot.queryParamMap.get('session_id') ?? null;
+    const paypalOrderId  = this.route.snapshot.queryParamMap.get('token')
+      ?? this.route.snapshot.queryParamMap.get('order_id')
+      ?? null;
     if (wasContributed) {
       this.showThankYou.set(true);
       // this.router.navigate([], {
@@ -105,16 +107,22 @@ export class CampaignViewComponent implements OnInit {
       this.totals.set(initial);
       this.contributions.set(this.sortContributionsDesc(contribs));
 
-      // Post-payment: write the contribution row to Supabase and refresh the view.
-      //
-      // Primary path  — session_id present (Stripe injected it via {CHECKOUT_SESSION_ID}):
-      //   Call confirm-contribution, which verifies the payment with Stripe and upserts
-      //   the contributions row synchronously. Then re-fetch to show the updated totals.
-      //
-      // Fallback path — no session_id (old links, direct navigation):
-      //   The async Stripe webhook will eventually write the row. Re-fetch after 3 s.
+      // Post-payment: confirm the provider-specific payment and refresh the view.
       if (wasContributed) {
-        if (sessionId) {
+        if ((provider === 'paypal' || provider === 'venmo') && paypalOrderId) {
+          try {
+            await this.supabaseSvc.confirmPayPalContribution(paypalOrderId);
+          } catch { /* silent */ }
+
+          try {
+            const [refreshedTotals, refreshedContribs] = await Promise.all([
+              this.supabaseSvc.getCampaignTotals(c.id),
+              this.supabaseSvc.getContributions(c.id, 10),
+            ]);
+            this.totals.set(refreshedTotals);
+            this.contributions.set(this.sortContributionsDesc(refreshedContribs));
+          } catch { /* silent */ }
+        } else if (sessionId) {
           try {
             await this.supabaseSvc.confirmContribution(sessionId);
           } catch { /* webhook will handle it if the Edge Function fails */ }

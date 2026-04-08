@@ -1,16 +1,13 @@
 <div class="contribute-page">
-
-  <!-- ── Loading ────────────────────────────────────────────────────────── -->
   @if (loading()) {
-    <div class="contribute-page__loader" aria-label="Loading…">
+    <div class="contribute-page__loader" aria-label="Loading...">
       <svg class="animate-spin w-8 h-8 text-brand-green" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-        <path  class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
       </svg>
     </div>
   }
 
-  <!-- ── Load error ─────────────────────────────────────────────────────── -->
   @if (loadError()) {
     <div class="contribute-page__inner">
       <div class="status-banner status-banner--error" role="alert">
@@ -19,15 +16,12 @@
         </svg>
         {{ loadError() }}
       </div>
-      <app-button variant="ghost" size="md" routerLink="/" class="mt-4">← Back to home</app-button>
+      <app-button variant="ghost" size="md" routerLink="/" class="mt-4">Back to home</app-button>
     </div>
   }
 
-  <!-- ── Contribute form ────────────────────────────────────────────────── -->
   @if (!loading() && !loadError() && campaign(); as c) {
     <div class="contribute-page__inner">
-
-      <!-- Back link -->
       <a [routerLink]="['/campaigns', c.slug]" class="contribute-page__back">
         <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 4.158a.75.75 0 11-1.06 1.06l-5.5-5.5a.75.75 0 010-1.06l5.5-5.5a.75.75 0 111.06 1.06L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/>
@@ -35,7 +29,6 @@
         {{ c.title }}
       </a>
 
-      <!-- ── Cancellation notice ──────────────────────────────────────── -->
       @if (wasCancelled()) {
         <div class="status-banner status-banner--warning" role="status">
           <svg class="w-5 h-5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -45,10 +38,7 @@
         </div>
       }
 
-      <!-- ── Card ────────────────────────────────────────────────────── -->
       <div class="contribute-card">
-
-        <!-- Header -->
         <div class="contribute-card__header">
           <div class="contribute-card__icon" aria-hidden="true">
             <svg class="w-6 h-6 text-forest" viewBox="0 0 20 20" fill="currentColor">
@@ -63,13 +53,9 @@
 
         <form (ngSubmit)="onSubmit()" [formGroup]="form" novalidate>
           <div class="contribute-form-layout">
-            <!-- ════════════════════════════════════════════════════════════
-                 SECTION 1 — Amount
-            ════════════════════════════════════════════════════════════ -->
             <div class="form-section">
               <h2 class="form-section__title">Choose an amount</h2>
 
-              <!-- Preset pills -->
               <div class="amount-pills" role="group" aria-label="Suggested amounts">
                 @for (preset of presets; track preset) {
                   <button
@@ -84,7 +70,6 @@
                 }
               </div>
 
-              <!-- Custom amount -->
               <div class="custom-amount-wrap">
                 <span class="custom-amount__symbol" aria-hidden="true">$</span>
                 <input
@@ -106,7 +91,6 @@
                 />
               </div>
 
-              <!-- Amount validation message -->
               <div id="amount-error" aria-live="polite">
                 @if (amountTouched() && !amountValid()) {
                   <p class="field-error" role="alert">Please enter an amount of at least $1.</p>
@@ -116,17 +100,11 @@
 
             <hr class="form-divider" />
 
-            <!-- ════════════════════════════════════════════════════════════
-                 SECTION 2 — Contributor details
-            ════════════════════════════════════════════════════════════ -->
             <div class="form-section">
               <h2 class="form-section__title">Your details</h2>
 
-              <!-- Name -->
               <div class="field">
-                <label for="name" class="field__label">
-                  Your name
-                </label>
+                <label for="name" class="field__label">Your name</label>
                 <input
                   id="name"
                   type="text"
@@ -145,7 +123,6 @@
                 </div>
               </div>
 
-              <!-- Anonymous toggle -->
               <label class="toggle-row">
                 <div class="toggle-row__text">
                   <span class="toggle-row__label">Contribute anonymously</span>
@@ -170,7 +147,6 @@
                 </div>
               </label>
 
-              <!-- Message -->
               <div class="field">
                 <label for="message" class="field__label">
                   Leave a message <span class="field__optional">(optional)</span>
@@ -180,7 +156,7 @@
                   formControlName="message"
                   rows="3"
                   maxlength="200"
-                  placeholder="Send a personal note to the organiser and other contributors…"
+                  placeholder="Send a personal note to the organiser and other contributors..."
                   class="field__input field__input--textarea"
                   [class.field__input--error]="hasError('message', 'maxlength')"
                   [attr.aria-invalid]="hasError('message', 'maxlength') || null"
@@ -191,14 +167,67 @@
                     <p class="field-error" role="alert">Message must be 200 characters or fewer.</p>
                   }
                 </div>
-                <p class="field__counter" aria-live="polite" aria-atomic="true">{{ messageLength }}&nbsp;/&nbsp;200</p>
+                <p class="field__counter" aria-live="polite" aria-atomic="true">{{ messageLength }} / 200</p>
               </div>
             </div>
           </div>
 
-          <!-- ════════════════════════════════════════════════════════════
-               Pay error / retry
-          ════════════════════════════════════════════════════════════ -->
+          <div class="form-section form-section--payment">
+            <h2 class="form-section__title">Payment method</h2>
+
+            <div class="payment-methods" role="radiogroup" aria-label="Payment method">
+              <button
+                type="button"
+                class="payment-method"
+                [class.payment-method--selected]="paymentMethod() === 'stripe'"
+                [attr.aria-checked]="paymentMethod() === 'stripe'"
+                role="radio"
+                (click)="selectPaymentMethod('stripe')"
+              >
+                <span class="payment-method__title">Stripe</span>
+                <span class="payment-method__body">Card checkout with hosted Stripe payment pages.</span>
+              </button>
+
+              <button
+                type="button"
+                class="payment-method"
+                [class.payment-method--selected]="paymentMethod() === 'paypal'"
+                [attr.aria-checked]="paymentMethod() === 'paypal'"
+                role="radio"
+                (click)="selectPaymentMethod('paypal')"
+              >
+                <span class="payment-method__title">PayPal</span>
+                <span class="payment-method__body">Hosted PayPal approval flow with capture on return.</span>
+              </button>
+
+              <button
+                type="button"
+                class="payment-method"
+                [class.payment-method--selected]="paymentMethod() === 'venmo'"
+                [attr.aria-checked]="paymentMethod() === 'venmo'"
+                role="radio"
+                (click)="selectPaymentMethod('venmo')"
+              >
+                <span class="payment-method__title">Venmo</span>
+                <span class="payment-method__body">Pay with Venmo through the PayPal SDK on supported devices and browsers.</span>
+              </button>
+            </div>
+
+            @if (paymentMethod() === 'venmo') {
+              <div class="venmo-panel">
+                <div id="venmo-button-container" class="venmo-button-container"></div>
+
+                @if (venmoLoading()) {
+                  <p class="payment-note">Loading Venmo...</p>
+                } @else if (!venmoEligible()) {
+                  <p class="payment-note">
+                    Venmo is only available for eligible US buyers and supported devices or browsers.
+                  </p>
+                }
+              </div>
+            }
+          </div>
+
           @if (payError()) {
             <div class="status-banner status-banner--error status-banner--inset" role="alert">
               <svg class="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -212,11 +241,7 @@
             </div>
           }
 
-          <!-- ════════════════════════════════════════════════════════════
-               Submit
-          ════════════════════════════════════════════════════════════ -->
           <div class="contribute-card__footer">
-            <!-- Summary -->
             @if (amountValid()) {
               <p class="amount-summary">
                 You're contributing
@@ -224,40 +249,50 @@
               </p>
             }
 
-            <app-button
-              variant="campaign"
-              size="lg"
-              type="submit"
-              [fullWidth]="true"
-              [loading]="paying()"
-              [disabled]="form.invalid"
-            >
-              <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M2.5 4A1.5 1.5 0 001 5.5V6h18v-.5A1.5 1.5 0 0017.5 4h-15zM19 8.5H1v6A1.5 1.5 0 002.5 16h15a1.5 1.5 0 001.5-1.5v-6zM3 13.25a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm4.75-.75a.75.75 0 000 1.5h3.5a.75.75 0 000-1.5h-3.5z" clip-rule="evenodd"/>
-              </svg>
-              Pay securely with Stripe
-            </app-button>
+            @if (paymentMethod() !== 'venmo') {
+              <app-button
+                variant="campaign"
+                size="lg"
+                type="submit"
+                [fullWidth]="true"
+                [loading]="paying()"
+                [disabled]="form.invalid"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M2.5 4A1.5 1.5 0 001 5.5V6h18v-.5A1.5 1.5 0 0017.5 4h-15zM19 8.5H1v6A1.5 1.5 0 002.5 16h15a1.5 1.5 0 001.5-1.5v-6zM3 13.25a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm4.75-.75a.75.75 0 000 1.5h3.5a.75.75 0 000-1.5h-3.5z" clip-rule="evenodd"/>
+                </svg>
+                {{ paymentButtonLabel }}
+              </app-button>
+            }
 
-            <p class="stripe-note">
+            <p class="payment-note">
               <svg class="w-3.5 h-3.5 inline-block mr-1 opacity-50" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/>
               </svg>
-              Secured by Stripe. We never store your card details.
+              @if (paymentMethod() === 'venmo') {
+                Secured by Venmo via the PayPal SDK.
+              } @else if (paymentMethod() === 'paypal') {
+                Secured by PayPal. Approval happens on PayPal-hosted pages.
+              } @else {
+                Secured by Stripe. We never store your card details.
+              }
             </p>
 
             @if (organiserDirectPay()) {
-              <p class="stripe-note stripe-note--direct">
+              <p class="payment-note payment-note--direct">
                 <svg class="w-3.5 h-3.5 inline-block mr-1 opacity-50" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path d="M2.5 4A1.5 1.5 0 001 5.5V6h18v-.5A1.5 1.5 0 0017.5 4h-15zM19 8.5H1v6A1.5 1.5 0 002.5 16h15a1.5 1.5 0 001.5-1.5v-6z"/>
                 </svg>
-                Donations go directly to the organiser.
+                @if (paymentMethod() === 'paypal') {
+                  Stripe direct payouts remain available when contributors choose Stripe.
+                } @else {
+                  Donations go directly to the organiser.
+                }
               </p>
             }
           </div>
-
         </form>
-      </div><!-- /.contribute-card -->
-    </div><!-- /.contribute-page__inner -->
+      </div>
+    </div>
   }
-
 </div>

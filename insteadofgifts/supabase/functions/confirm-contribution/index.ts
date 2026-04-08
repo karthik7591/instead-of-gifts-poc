@@ -120,10 +120,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
         contributor_name: contributorName,
         message,
         is_anonymous:     isAnonymous,
+        payment_provider: 'stripe',
+        payment_reference: piId,
         stripe_pi_id:     piId,
         status:           'succeeded',
       },
-      { onConflict: 'stripe_pi_id' },
+      { onConflict: 'payment_provider,payment_reference' },
     );
 
   if (error) {

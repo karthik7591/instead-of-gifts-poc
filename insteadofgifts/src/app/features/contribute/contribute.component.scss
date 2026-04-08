@@ -304,6 +304,59 @@
   text-align: right;
 }
 
+.payment-methods {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+
+  @media (max-width: 639px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.payment-method {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border, #CCCCCC);
+  border-radius: var(--radius-md, 0.5rem);
+  background: #fff;
+  color: var(--color-text-dark, #1E2D23);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+
+  &:hover {
+    border-color: var(--color-brand-green, #95C476);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-forest, #4A7255);
+    outline-offset: 2px;
+  }
+
+  &--selected {
+    border-color: var(--color-forest, #4A7255);
+    box-shadow: 0 0 0 3px rgba(74, 114, 85, 0.12);
+    background: #f9fcf7;
+  }
+}
+
+.payment-method__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.payment-method__body {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-text-muted, #6A8272);
+}
+
+.venmo-panel { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+
 // ── Anonymous toggle ───────────────────────────────────────────────────────
 
 .toggle-row {
@@ -379,10 +432,14 @@
   color: var(--color-text-muted, #6A8272);
 }
 
-.stripe-note {
+.payment-note {
   text-align: center;
   font-size: 0.75rem;
   color: var(--color-text-muted, #6A8272);
+
+  &--direct {
+    color: var(--color-forest, #4A7255);
+  }
 }
 
 @media (min-width: 1024px) {

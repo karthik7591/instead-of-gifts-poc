@@ -67,9 +67,6 @@ export class DashboardComponent implements OnInit {
   private readonly route       = inject(ActivatedRoute);
   private readonly platformId  = inject(PLATFORM_ID);
 
-  /** Expose to template for the upgrade banner. */
-  readonly isPro = this.proSvc.isPro;
-
   // ── State ──────────────────────────────────────────────────────────────────
   readonly rows    = signal<DashboardRow[]>([]);
   readonly loading = signal(true);
@@ -81,7 +78,7 @@ export class DashboardComponent implements OnInit {
 
   /** Stripe Connect status — null while loading. */
   readonly stripeConnect = signal<StripeConnectStatus | null>(null);
-
+  readonly campaignCredits = this.proSvc.campaignCredits;
   readonly greetingName = computed(() => {
     const name = this.rows()[0]?.campaign.organiserName?.trim();
     if (!name) return 'there';
@@ -99,6 +96,10 @@ export class DashboardComponent implements OnInit {
       currency:           'USD',
     };
   });
+
+  readonly campaignsNeedingUpgrade = computed(() =>
+    this.rows().filter((row) => !row.campaign.isPro)
+  );
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
@@ -122,6 +123,7 @@ export class DashboardComponent implements OnInit {
         this.campaignSvc.getOwnCampaigns(),
         this.loadStripeConnectStatus(connectParam === 'success'),
       ]);
+      await this.proSvc.loadProfile();
 
       // Parallel fetch of live totals
       const totalsArr = await Promise.all(

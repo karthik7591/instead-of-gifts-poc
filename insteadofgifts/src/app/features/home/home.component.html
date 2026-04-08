@@ -45,6 +45,25 @@
     </div>
   </section>
 
+  <section class="occasions-section" aria-labelledby="occasions-heading">
+    <div class="section-inner">
+      <h2 class="occasions-section__heading" id="occasions-heading">
+        For life's meaningful moments.
+      </h2>
+
+      <div class="occasions-grid" role="list">
+        @for (occasion of occasions; track occasion.label) {
+          <article class="occasion-card" role="listitem">
+            <div class="occasion-card__icon-wrap" aria-hidden="true">
+              <ng-icon [name]="occasion.icon" size="34" class="occasion-card__icon" />
+            </div>
+            <h3 class="occasion-card__label">{{ occasion.label }}</h3>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
   <!-- ══ HOW IT WORKS ═════════════════════════════════════════════════════════ -->
   @defer (on idle) {
     <section id="how-it-works" class="steps-section" aria-labelledby="steps-heading">
@@ -78,7 +97,7 @@
       <div class="section-inner">
 
         <h2 class="section-heading" id="pricing-heading">Simple, honest pricing</h2>
-        <p class="section-sub">Start for free. Upgrade to Pro when you need more.</p>
+        <p class="section-sub">Start for free. Upgrade individual campaigns only when you want the extra polish.</p>
 
         <div class="pricing-grid">
 
@@ -126,12 +145,12 @@
             <div class="plan-card__badge">Most popular</div>
 
             <div class="plan-card__header">
-              <h3 class="plan-card__name">Pro</h3>
+              <h3 class="plan-card__name">Campaign Pro</h3>
               <div class="plan-card__price">
                 <span class="plan-card__amount">$9.99</span>
-                <span class="plan-card__period">/ month</span>
+                <span class="plan-card__period">each</span>
               </div>
-              <p class="plan-card__tagline">Unlock the full experience.</p>
+              <p class="plan-card__tagline">A one-time upgrade for one campaign.</p>
             </div>
 
             <ul class="plan-card__features" role="list">

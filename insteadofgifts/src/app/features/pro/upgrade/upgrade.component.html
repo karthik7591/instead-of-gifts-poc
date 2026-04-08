@@ -1,72 +1,26 @@
 <div class="upgrade-page">
-
-  <!-- ══ HERO ══════════════════════════════════════════════════════════════ -->
   <div class="upgrade-hero">
     <div class="upgrade-hero__inner">
-      <p class="upgrade-hero__eyebrow">InsteadOfGifts Pro</p>
-      <h1 class="upgrade-hero__heading">Do more with every campaign</h1>
+      <p class="upgrade-hero__eyebrow">Campaign Access</p>
+      <h1 class="upgrade-hero__heading">Pay first, then create one campaign</h1>
       <p class="upgrade-hero__sub">
-        Unlock cover photos, custom thank-you messages, QR codes, and unlimited
-        campaigns — all for less than a cup of coffee a month.
+        Each payment adds one campaign credit. After checkout, you can create one Pro campaign with cover photo,
+        custom thank-you message, and QR downloads.
       </p>
     </div>
   </div>
 
   <div class="upgrade-page__inner">
-
-    <!-- ══ PRICING CARDS ════════════════════════════════════════════════════ -->
-    <div class="pricing-grid">
-
-      <!-- Free card -->
-      <div class="plan-card">
-        <div class="plan-card__header">
-          <p class="plan-card__name">Free</p>
-          <div class="plan-card__price">
-            <span class="plan-card__amount">$0</span>
-            <span class="plan-card__period">forever</span>
-          </div>
-          <p class="plan-card__tagline">Perfect for getting started</p>
-        </div>
-
-        <ul class="plan-features" role="list">
-          @for (f of features; track f.label) {
-            <li class="plan-feature" [class.plan-feature--disabled]="f.free === false">
-              @if (f.free === false) {
-                <!-- Unavailable -->
-                <svg class="plan-feature__icon plan-feature__icon--no" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
-                </svg>
-              } @else {
-                <!-- Available -->
-                <svg class="plan-feature__icon plan-feature__icon--yes" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
-                </svg>
-              }
-              <span class="plan-feature__label">{{ f.label }}</span>
-              @if (typeof f.free === 'string') {
-                <span class="plan-feature__note">{{ f.free }}</span>
-              }
-            </li>
-          }
-        </ul>
-
-        <div class="plan-card__footer">
-          <app-button variant="ghost" size="md" [fullWidth]="true" [routerLink]="['/dashboard']">
-            Continue with Free
-          </app-button>
-        </div>
-      </div>
-
-      <!-- Pro card -->
+    <div class="pricing-grid pricing-grid--single">
       <div class="plan-card plan-card--pro">
-        <div class="plan-card__badge">Most popular</div>
+        <div class="plan-card__badge">One time</div>
         <div class="plan-card__header">
-          <p class="plan-card__name plan-card__name--pro">Pro</p>
+          <p class="plan-card__name plan-card__name--pro">Campaign Credit</p>
           <div class="plan-card__price">
             <span class="plan-card__amount">$9.99</span>
-            <span class="plan-card__period">/ month</span>
+            <span class="plan-card__period">one campaign</span>
           </div>
-          <p class="plan-card__tagline">Everything you need to run great campaigns</p>
+          <p class="plan-card__tagline">Buy campaign access before you start building it</p>
         </div>
 
         <ul class="plan-features" role="list">
@@ -76,75 +30,56 @@
                 <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
               </svg>
               <span class="plan-feature__label">{{ f.label }}</span>
-              @if (typeof f.pro === 'string') {
-                <span class="plan-feature__note plan-feature__note--pro">{{ f.pro }}</span>
-              }
             </li>
           }
         </ul>
 
         <div class="plan-card__footer">
-          @if (error()) {
-            <div class="upgrade-error" role="alert">{{ error() }}</div>
-          }
+          <div class="campaign-picker__status">
+            Credits available: <strong>{{ campaignCredits() }}</strong>
+          </div>
+
           <app-button
             variant="pro"
             size="md"
             [fullWidth]="true"
-            [loading]="loading()"
             (click)="onUpgrade()"
           >
             <svg class="upgrade-btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.83-4.401z" clip-rule="evenodd"/>
             </svg>
-            Upgrade to Pro — $9.99/mo
+            Continue - $9.99
           </app-button>
-          <p class="plan-card__cancel-note">Cancel any time. No hidden fees.</p>
+
+          <p class="plan-card__cancel-note">One payment adds one campaign credit.</p>
         </div>
       </div>
-
     </div>
 
-    <!-- ══ FAQ ══════════════════════════════════════════════════════════════ -->
     <div class="upgrade-faq">
       <h2 class="upgrade-faq__heading">Questions</h2>
       <dl class="faq-list">
-
         <div class="faq-item">
-          <dt class="faq-item__q">When will I be charged?</dt>
+          <dt class="faq-item__q">When can I create the campaign?</dt>
           <dd class="faq-item__a">
-            You'll be charged $9.99 today and on the same day each month. The subscription
-            is billed via Stripe — your card details are never stored on our servers.
+            Right after payment succeeds. You will be sent directly to the create campaign page.
           </dd>
         </div>
 
         <div class="faq-item">
-          <dt class="faq-item__q">Can I cancel at any time?</dt>
+          <dt class="faq-item__q">What does one payment include?</dt>
           <dd class="faq-item__a">
-            Yes. Cancel from your account settings and you'll keep Pro access until the
-            end of the current billing period. No questions asked.
+            One campaign creation credit. Using that credit creates one Pro campaign.
           </dd>
         </div>
 
         <div class="faq-item">
-          <dt class="faq-item__q">What happens to my campaigns if I downgrade?</dt>
+          <dt class="faq-item__q">Can I buy another campaign later?</dt>
           <dd class="faq-item__a">
-            Your existing campaigns stay active. Pro features (cover photos, custom
-            messages, QR codes) will be hidden for contributors but the data is preserved
-            so you can re-enable them if you resubscribe.
+            Yes. Each additional payment adds one more campaign credit.
           </dd>
         </div>
-
-        <div class="faq-item">
-          <dt class="faq-item__q">Is there a free trial?</dt>
-          <dd class="faq-item__a">
-            Not right now, but the Free plan is genuinely fully featured for running a
-            campaign. Pro is for people who run campaigns regularly and want that extra polish.
-          </dd>
-        </div>
-
       </dl>
     </div>
-
-  </div><!-- /inner -->
+  </div>
 </div>

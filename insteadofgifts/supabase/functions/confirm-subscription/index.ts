@@ -45,15 +45,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return respond(400, { error: 'sessionId is required' });
   }
 
-  const session = await stripe.checkout.sessions.retrieve(sessionId, {
-    expand: ['subscription'],
-  });
-
-  if (session.mode !== 'subscription') {
-    return respond(400, { error: 'Checkout session is not a subscription' });
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  if (session.mode !== 'payment') {
+    return respond(400, { error: 'Checkout session is not a one-time payment' });
   }
   if (session.payment_status !== 'paid') {
-    return respond(409, { error: 'Subscription payment is not completed yet' });
+    return respond(409, { error: 'Payment is not completed yet' });
   }
 
   const metaUserId = session.metadata?.['supabase_user_id'];
@@ -61,31 +58,33 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return respond(403, { error: 'Session does not belong to this user' });
   }
 
-  const customerId = typeof session.customer === 'string'
-    ? session.customer
-    : session.customer?.id;
-  const subscriptionId = typeof session.subscription === 'string'
-    ? session.subscription
-    : session.subscription?.id;
+  const { data: profile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('campaign_pro_credits')
+    .eq('id', user.id)
+    .maybeSingle();
 
-  const { error: upsertError } = await supabase
+  if (profileError) {
+    return respond(500, { error: `Failed to load user profile: ${profileError.message}` });
+  }
+
+  const { error: updateError } = await supabase
     .from('user_profiles')
     .upsert(
       {
         id: user.id,
-        is_pro: true,
-        stripe_customer_id: customerId ?? null,
-        stripe_subscription_id: subscriptionId ?? null,
+        campaign_pro_credits: (profile?.campaign_pro_credits ?? 0) + 1,
+        pro_payment_provider: 'stripe',
         pro_since: new Date().toISOString(),
       },
-      { onConflict: 'id' }
+      { onConflict: 'id' },
     );
 
-  if (upsertError) {
-    return respond(500, { error: `Failed to activate Pro: ${upsertError.message}` });
+  if (updateError) {
+    return respond(500, { error: `Failed to add campaign credit: ${updateError.message}` });
   }
 
-  return respond(200, { ok: true });
+  return respond(200, { ok: true, campaignCredits: (profile?.campaign_pro_credits ?? 0) + 1 });
 });
 
 function respond(status: number, body: Record<string, unknown>): Response {

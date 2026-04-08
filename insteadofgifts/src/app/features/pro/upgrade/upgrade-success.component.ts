@@ -1,19 +1,15 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   OnInit,
   inject,
   signal,
-  ChangeDetectionStrategy,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { ProService } from '../../../core/services/pro.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
-/**
- * Shown after Stripe redirects the user back on a successful subscription.
- * Refreshes the Pro status so the app reflects the upgrade immediately.
- */
 @Component({
   selector: 'app-upgrade-success',
   standalone: true,
@@ -23,11 +19,11 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
     <div class="success-page">
       <div class="success-card">
         @if (loading()) {
-          <svg class="success-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-label="Loading…">
+          <svg class="success-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-label="Loading...">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-            <path  class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
           </svg>
-          <p class="success-card__hint">Activating your Pro account…</p>
+          <p class="success-card__hint">Finishing your payment...</p>
         } @else {
           <div class="success-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -35,13 +31,17 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
               <polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
           </div>
-          <h1 class="success-card__heading">Welcome to Pro!</h1>
+          <h1 class="success-card__heading">{{ error() ? 'Payment not confirmed' : 'Payment complete' }}</h1>
           <p class="success-card__body">
-            Your subscription is active. Enjoy unlimited campaigns, cover photos,
-            custom messages, QR codes, and more.
+            @if (error()) {
+              {{ error() }}
+            } @else {
+              You now have {{ campaignCredits() }} campaign credit{{ campaignCredits() === 1 ? '' : 's' }}.
+              Create your campaign now.
+            }
           </p>
-          <app-button variant="pro" size="md" [routerLink]="['/dashboard']">
-            Go to dashboard
+          <app-button variant="pro" size="md" [routerLink]="['/campaigns', 'new']">
+            Create campaign
           </app-button>
         }
       </div>
@@ -95,40 +95,51 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
       font-weight: 800;
       color: var(--color-text-dark, #1E2D23);
     }
-    .success-card__body {
+    .success-card__body,
+    .success-card__hint {
       font-size: 0.9375rem;
       color: var(--color-text-muted, #6A8272);
       line-height: 1.6;
     }
-    .success-card__hint {
-      font-size: 0.9375rem;
-      color: var(--color-text-muted, #6A8272);
-    }
   `],
 })
 export class UpgradeSuccessComponent implements OnInit {
-  private readonly proSvc = inject(ProService);
   private readonly supabase = inject(SupabaseService);
-  private readonly route = inject(ActivatedRoute);
+  private readonly proSvc = inject(ProService);
 
   readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly campaignCredits = this.proSvc.campaignCredits;
 
   async ngOnInit(): Promise<void> {
-    const sessionId = this.route.snapshot.queryParamMap.get('session_id');
-    if (sessionId) {
-      // Deterministic post-checkout activation in case webhook delivery is delayed.
-      await this.supabase.client.functions.invoke('confirm-subscription', {
-        body: { sessionId },
-      });
-    }
+    const url = new URL(window.location.href);
+    const provider = url.searchParams.get('provider') ?? 'stripe';
+    const sessionId = url.searchParams.get('session_id');
+    const paypalOrderId = url.searchParams.get('token');
+    const alreadyConfirmed = url.searchParams.get('confirmed') === 'true';
 
-    // Poll briefly to pick up the latest profile state.
-    let retries = 3;
-    while (retries-- > 0) {
+    try {
+      if ((provider === 'paypal' || provider === 'venmo') && paypalOrderId && !alreadyConfirmed) {
+        const { error } = await this.supabase.client.functions.invoke('confirm-paypal-campaign-payment', {
+          body: { orderId: paypalOrderId },
+        });
+        if (error) throw new Error(error.message || 'Failed to confirm the PayPal payment.');
+      } else if (provider === 'venmo' && alreadyConfirmed) {
+        // Venmo confirms inside the SDK approval step before redirecting here.
+      } else if (sessionId) {
+        const { error } = await this.supabase.client.functions.invoke('confirm-stripe-campaign-payment', {
+          body: { sessionId },
+        });
+        if (error) throw new Error(error.message || 'Failed to confirm the Stripe payment.');
+      } else {
+        throw new Error('Missing payment confirmation details in the return URL.');
+      }
+
       await this.proSvc.loadProfile();
-      if (this.proSvc.isPro()) break;
-      await new Promise<void>((r) => setTimeout(r, 1500));
+    } catch (err: unknown) {
+      this.error.set(err instanceof Error ? err.message : 'Failed to confirm the campaign payment.');
+    } finally {
+      this.loading.set(false);
     }
-    this.loading.set(false);
   }
 }

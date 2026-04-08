@@ -19,7 +19,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CampaignService } from '../../../core/services/campaign.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
-import { ProService } from '../../../core/services/pro.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Campaign, CampaignFundUse } from '../../../core/models/campaign.model';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -63,11 +62,9 @@ export class CampaignEditComponent implements OnInit, OnDestroy {
   private readonly router      = inject(Router);
   private readonly campaignSvc = inject(CampaignService);
   private readonly supabaseSvc = inject(SupabaseService);
-  private readonly proSvc      = inject(ProService);
   private readonly toastSvc    = inject(ToastService);
 
   // ── Signals ────────────────────────────────────────────────────────────────
-  readonly isPro       = this.proSvc.isPro;
   readonly loading     = signal(true);
   readonly loadError   = signal<string | null>(null);
   readonly submitting  = signal(false);
@@ -175,7 +172,7 @@ export class CampaignEditComponent implements OnInit, OnDestroy {
         fundUse:           fundUse ?? null,
         targetAmountPence: targetAmount != null ? targetAmount * 100 : null,
         deadline:          deadline || null,
-        customMessage:     this.isPro() ? (customMessage || undefined) : undefined,
+        customMessage:     c.isPro ? (customMessage || undefined) : undefined,
       });
 
       this.toastSvc.success('Campaign updated successfully.');

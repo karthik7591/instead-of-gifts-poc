@@ -44,6 +44,28 @@
   overflow: hidden;
 }
 
+.create-page__paywall {
+  background: #fff;
+  border: 1px solid #C8DAC2;
+  border-radius: 16px;
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgb(0 0 0 / .08));
+  padding: 2rem;
+  max-width: 560px;
+}
+
+.create-page__paywall-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-dark, #1E2D23);
+}
+
+.create-page__paywall-body,
+.create-page__paywall-credits {
+  margin-top: 0.75rem;
+  color: var(--color-text-muted, #6A8272);
+  line-height: 1.6;
+}
+
 // ── Two-column layout (desktop) ────────────────────────────────────────────
 
 .form-columns {
@@ -324,6 +346,12 @@
   user-select: none;
 }
 
+.locked-feature__field--active {
+  opacity: 1;
+  pointer-events: auto;
+  user-select: auto;
+}
+
 .locked-feature__label {
   font-size: 0.8125rem;
   font-weight: 600;
@@ -342,6 +370,10 @@
 .locked-section__cta {
   border-top: 1px solid #e5e7eb;
   padding-top: 1rem;
+}
+
+.locked-section--active {
+  border-style: solid;
 }
 
 // ── Submit error ───────────────────────────────────────────────────────────

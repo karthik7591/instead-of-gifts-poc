@@ -56,17 +56,32 @@ verify_jwt = false
 [functions.confirm-contribution]
 verify_jwt = false
 
-# stripe-subscription: called by authenticated users to start a Pro subscription.
-# JWT verification is enabled (default). The function reads the JWT to identify
-# the user and creates/reuses their Stripe customer record.
-[functions.stripe-subscription]
+# create-paypal-order: public endpoint used to start hosted PayPal checkout.
+[functions.create-paypal-order]
+verify_jwt = false
+
+# confirm-paypal-contribution: captures the approved PayPal order and marks the
+# pending contribution as succeeded.
+[functions.confirm-paypal-contribution]
+verify_jwt = false
+
+[functions.paypal-campaign-payment]
+verify_jwt = false
+
+[functions.confirm-paypal-campaign-payment]
+verify_jwt = false
+
+# stripe-campaign-payment: called by authenticated users to start a one-time
+# campaign credit checkout.
+[functions.stripe-campaign-payment]
 # Keep gateway JWT check off; token is validated inside the function with
 # supabase.auth.getUser(jwt), which avoids false "Invalid JWT" gateway rejects.
 verify_jwt = false
 
-# confirm-subscription: called by the post-checkout success page with session_id.
-# The function validates the user JWT and checkout session before activating Pro.
-[functions.confirm-subscription]
+# confirm-stripe-campaign-payment: called by the post-checkout success page with
+# session_id. The function validates the user JWT and checkout session before
+# adding a campaign credit.
+[functions.confirm-stripe-campaign-payment]
 verify_jwt = false
 
 # stripe-webhook: called by Stripe, not by users. Stripe signs requests with

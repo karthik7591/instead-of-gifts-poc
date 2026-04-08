@@ -1,34 +1,30 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { ToastService } from './toast.service';
 
 interface UserProfile {
-  id:                     string;
-  is_pro:                 boolean;
-  stripe_customer_id:     string | null;
-  stripe_subscription_id: string | null;
-  pro_since:              string | null;
+  id: string;
+  is_pro: boolean;
+  stripe_customer_id: string | null;
+  pro_payment_provider: string | null;
+  pro_since: string | null;
+  campaign_pro_credits: number;
 }
 
-/**
- * ProService — tracks the current user's Pro subscription status.
- *
- * Bootstraps by reading `user_profiles` from Supabase on service creation and
- * whenever the auth state changes. The `isPro` signal is the single source of
- * truth consumed by guards, the dashboard banner, and the create-campaign form.
- */
+type UserProfileRow = Partial<UserProfile> & { id: string };
+
 @Injectable({ providedIn: 'root' })
 export class ProService {
-  private readonly supabase  = inject(SupabaseService);
-  private readonly toastSvc  = inject(ToastService);
+  private readonly supabase = inject(SupabaseService);
+  private readonly toastSvc = inject(ToastService);
 
   private readonly _profile = signal<UserProfile | null>(null);
 
-  /** True when the current user has an active Pro subscription. */
   readonly isPro = computed(() => this._profile()?.is_pro ?? false);
+  readonly campaignCredits = computed(() => this._profile()?.campaign_pro_credits ?? 0);
+  readonly canCreatePaidCampaign = computed(() => this.campaignCredits() > 0);
 
   constructor() {
-    // Re-load profile whenever the Supabase auth session changes
     this.supabase.client.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         void this.loadProfile();
@@ -37,14 +33,9 @@ export class ProService {
       }
     });
 
-    // Bootstrap immediately in case the user is already signed in
     void this.loadProfile();
   }
 
-  /**
-   * (Re-)fetches the user's profile row.
-   * Call this after a successful Pro upgrade to pick up the new `is_pro` value.
-   */
   async loadProfile(): Promise<void> {
     const { data: { user } } = await this.supabase.client.auth.getUser();
 
@@ -55,16 +46,28 @@ export class ProService {
 
     const { data, error } = await this.supabase.client
       .from('user_profiles')
-      .select('id, is_pro, stripe_customer_id, stripe_subscription_id, pro_since')
+      .select('*')
       .eq('id', user.id)
-      .maybeSingle();
+      .maybeSingle<UserProfileRow>();
 
     if (error) {
       console.error('[ProService] Failed to load user profile:', error.message);
-      this.toastSvc.error('Failed to load subscription status — some features may be unavailable.');
+      this.toastSvc.error('Failed to load payment status.');
       return;
     }
 
-    this._profile.set(data);
+    if (!data) {
+      this._profile.set(null);
+      return;
+    }
+
+    this._profile.set({
+      id: data.id,
+      is_pro: data.is_pro ?? false,
+      stripe_customer_id: data.stripe_customer_id ?? null,
+      pro_payment_provider: data.pro_payment_provider ?? null,
+      pro_since: data.pro_since ?? null,
+      campaign_pro_credits: data.campaign_pro_credits ?? 0,
+    });
   }
 }

@@ -10,6 +10,13 @@ export const PRO_ROUTES: Routes = [
           import('./upgrade/upgrade.component').then((m) => m.UpgradeComponent),
       },
       {
+        path: 'payment',
+        loadComponent: () =>
+          import('./upgrade/upgrade-payment.component').then(
+            (m) => m.UpgradePaymentComponent
+          ),
+      },
+      {
         path: 'success',
         loadComponent: () =>
           import('./upgrade/upgrade-success.component').then(

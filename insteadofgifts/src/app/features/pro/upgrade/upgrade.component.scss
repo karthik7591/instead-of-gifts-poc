@@ -203,6 +203,147 @@
   text-align: center;
 }
 
+.campaign-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.campaign-picker__label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-dark, #1E2D23);
+}
+
+.campaign-picker__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.campaign-picker__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid #C8DAC2;
+  border-radius: 14px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-brand-green, #95C476);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-forest, #4A7255);
+    outline-offset: 2px;
+  }
+
+  &--selected {
+    border-color: var(--color-forest, #4A7255);
+    box-shadow: 0 0 0 3px rgba(74, 114, 85, 0.12);
+    background: #f9fcf7;
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    background: #f8faf8;
+    opacity: 0.7;
+  }
+}
+
+.pricing-grid--single {
+  grid-template-columns: minmax(0, 520px);
+  justify-content: center;
+}
+
+.campaign-picker__title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text-dark, #1E2D23);
+}
+
+.campaign-picker__meta,
+.campaign-picker__empty {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-text-muted, #6A8272);
+}
+
+.campaign-picker__status {
+  font-size: 0.875rem;
+  color: var(--color-text-dark, #1E2D23);
+  text-align: center;
+}
+
+.payment-methods-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.payment-methods-wrap__title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-dark, #1E2D23);
+  text-align: center;
+}
+
+.payment-methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.payment-method {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid #C8DAC2;
+  border-radius: 14px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+
+  &:hover {
+    border-color: var(--color-brand-green, #95C476);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-forest, #4A7255);
+    outline-offset: 2px;
+  }
+
+  &--selected {
+    border-color: var(--color-forest, #4A7255);
+    box-shadow: 0 0 0 3px rgba(74, 114, 85, 0.12);
+    background: #f9fcf7;
+  }
+}
+
+.payment-method__title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text-dark, #1E2D23);
+}
+
+.payment-method__body {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--color-text-muted, #6A8272);
+}
+
 // ── Error banner ────────────────────────────────────────────────────────────
 
 .upgrade-error {
