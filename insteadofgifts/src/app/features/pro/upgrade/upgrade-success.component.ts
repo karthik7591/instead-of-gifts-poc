@@ -110,6 +110,7 @@ export class UpgradeSuccessComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly campaignCredits = this.proSvc.campaignCredits;
+  readonly upgradedCampaignId = signal<string | null>(null);
 
   async ngOnInit(): Promise<void> {
     const url = new URL(window.location.href);
@@ -120,17 +121,23 @@ export class UpgradeSuccessComponent implements OnInit {
 
     try {
       if ((provider === 'paypal' || provider === 'venmo') && paypalOrderId && !alreadyConfirmed) {
-        const { error } = await this.supabase.client.functions.invoke('confirm-paypal-campaign-payment', {
+        const { data, error } = await this.supabase.client.functions.invoke<{
+          upgradedCampaignId?: string | null;
+        }>('confirm-paypal-campaign-payment', {
           body: { orderId: paypalOrderId },
         });
         if (error) throw new Error(error.message || 'Failed to confirm the PayPal payment.');
+        this.upgradedCampaignId.set(data?.upgradedCampaignId ?? null);
       } else if (provider === 'venmo' && alreadyConfirmed) {
         // Venmo confirms inside the SDK approval step before redirecting here.
       } else if (sessionId) {
-        const { error } = await this.supabase.client.functions.invoke('confirm-stripe-campaign-payment', {
+        const { data, error } = await this.supabase.client.functions.invoke<{
+          upgradedCampaignId?: string | null;
+        }>('confirm-stripe-campaign-payment', {
           body: { sessionId },
         });
         if (error) throw new Error(error.message || 'Failed to confirm the Stripe payment.');
+        this.upgradedCampaignId.set(data?.upgradedCampaignId ?? null);
       } else {
         throw new Error('Missing payment confirmation details in the return URL.');
       }

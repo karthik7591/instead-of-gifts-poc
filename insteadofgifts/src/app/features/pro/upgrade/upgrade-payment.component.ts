@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { environment } from '../../../../environments/environment';
@@ -201,18 +201,21 @@ import { PayPalSdkService, PayPalNamespace } from '../../../core/services/paypal
 export class UpgradePaymentComponent {
   private readonly supabase = inject(SupabaseService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly paypalSdkSvc = inject(PayPalSdkService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly activeProvider = signal<'stripe' | 'paypal' | null>(null);
+  readonly upgradeCampaignId = signal<string | null>(null);
   readonly venmoEligible = signal(false);
   readonly venmoLoading = signal(false);
   readonly venmoRendered = signal(false);
   private venmoRenderToken = 0;
 
   constructor() {
+    this.upgradeCampaignId.set(this.route.snapshot.queryParamMap.get('campaignId'));
     afterNextRender(() => {
       void this.ensureVenmoButton();
     });
@@ -233,12 +236,14 @@ export class UpgradePaymentComponent {
       }
 
       const origin = window.location.origin;
-      const successUrl = `${origin}/pro/upgrade/success`;
-      const cancelUrl = `${origin}/pro/upgrade/payment`;
+      const campaignId = this.upgradeCampaignId();
+      const query = campaignId ? `?campaignId=${encodeURIComponent(campaignId)}` : '';
+      const successUrl = `${origin}/pro/upgrade/success${query}`;
+      const cancelUrl = `${origin}/pro/upgrade/payment${query}`;
 
       const { data, error } = await this.supabase.client.functions.invoke<{ url: string }>(
         'stripe-campaign-payment',
-        { body: { successUrl, cancelUrl } }
+        { body: { successUrl, cancelUrl, campaignId } }
       );
       if (error) throw new Error(error.message || 'Unable to start checkout.');
       if (!data?.url) throw new Error('Checkout URL missing from response.');
@@ -265,9 +270,12 @@ export class UpgradePaymentComponent {
       }
 
       const origin = window.location.origin;
+      const campaignId = this.upgradeCampaignId();
+      const query = campaignId ? `?campaignId=${encodeURIComponent(campaignId)}` : '';
       const data = await startPayPalCheckout(session.access_token, {
-        successUrl: `${origin}/pro/upgrade/success`,
-        cancelUrl: `${origin}/pro/upgrade/payment`,
+        successUrl: `${origin}/pro/upgrade/success${query}`,
+        cancelUrl: `${origin}/pro/upgrade/payment${query}`,
+        campaignId,
       });
       if (!data?.url) throw new Error('PayPal checkout URL missing from response.');
       window.location.href = data.url;
@@ -332,9 +340,12 @@ export class UpgradePaymentComponent {
         }
 
         const origin = window.location.origin;
+        const campaignId = this.upgradeCampaignId();
+        const query = campaignId ? `?campaignId=${encodeURIComponent(campaignId)}` : '';
         const response = await startPayPalCheckout(session.access_token, {
-          successUrl: `${origin}/pro/upgrade/success`,
-          cancelUrl: `${origin}/pro/upgrade/payment`,
+          successUrl: `${origin}/pro/upgrade/success${query}`,
+          cancelUrl: `${origin}/pro/upgrade/payment${query}`,
+          campaignId,
         });
 
         if (!response?.orderId) {
@@ -370,7 +381,7 @@ export class UpgradePaymentComponent {
 
 async function startPayPalCheckout(
   accessToken: string,
-  body: { successUrl: string; cancelUrl: string },
+  body: { successUrl: string; cancelUrl: string; campaignId: string | null },
 ): Promise<{ url: string; orderId?: string }> {
   const response = await fetch(`${environment.apiUrl}/paypal-campaign-payment`, {
     method: 'POST',

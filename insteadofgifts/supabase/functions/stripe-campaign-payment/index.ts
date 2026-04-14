@@ -42,7 +42,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return respond(401, { error: 'Invalid or expired token' });
   }
 
-  let body: { successUrl?: string; cancelUrl?: string };
+  let body: { successUrl?: string; cancelUrl?: string; campaignId?: string };
   try {
     body = await req.json();
   } catch {
@@ -51,11 +51,31 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   const successUrl = body.successUrl?.trim();
   const cancelUrl = body.cancelUrl?.trim();
+  const campaignId = body.campaignId?.trim() || null;
   if (!successUrl || !cancelUrl) {
     return respond(400, { error: 'successUrl and cancelUrl are required' });
   }
 
   try {
+    if (campaignId) {
+      const { data: campaign, error: campaignError } = await supabase
+        .from('campaigns')
+        .select('id, is_pro, created_by')
+        .eq('id', campaignId)
+        .eq('created_by', user.id)
+        .maybeSingle();
+
+      if (campaignError) {
+        return respond(500, { error: `Failed to load campaign: ${campaignError.message}` });
+      }
+      if (!campaign) {
+        return respond(404, { error: 'Campaign not found.' });
+      }
+      if (campaign.is_pro) {
+        return respond(409, { error: 'Campaign is already Pro.' });
+      }
+    }
+
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select('stripe_customer_id')
@@ -90,6 +110,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       metadata: {
         supabase_user_id: user.id,
         type: 'campaign_creation_credit',
+        ...(campaignId ? { upgrade_campaign_id: campaignId } : {}),
       },
       allow_promotion_codes: true,
       success_url: buildSuccessUrl(successUrl),

@@ -71,6 +71,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     const metaUserId = session.metadata?.['supabase_user_id'];
+    const upgradeCampaignId = session.metadata?.['upgrade_campaign_id']?.trim() || null;
     if (metaUserId && metaUserId !== user.id) {
       return respond(403, { error: 'Session does not belong to this user' });
     }
@@ -100,16 +101,48 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const grantResult = (data ?? null) as { applied?: boolean; campaign_pro_credits?: number } | null;
     const applied = grantResult?.applied ?? false;
-    const campaignCredits = grantResult?.campaign_pro_credits ?? 0;
+    let campaignCredits = grantResult?.campaign_pro_credits ?? 0;
+    let upgradedCampaignId: string | null = null;
+
+    if (upgradeCampaignId) {
+      const { data: upgradedCampaign, error: upgradeError } = await supabase
+        .rpc('upgrade_paid_campaign', { p_campaign_id: upgradeCampaignId })
+        .single();
+
+      if (upgradeError) {
+        console.error('[confirm-stripe-campaign-payment] Failed to auto-upgrade campaign', {
+          sessionId,
+          userId: user.id,
+          upgradeCampaignId,
+          message: upgradeError.message,
+          code: upgradeError.code ?? null,
+          details: upgradeError.details ?? null,
+          hint: upgradeError.hint ?? null,
+        });
+        return respond(500, { error: `Payment confirmed, but campaign upgrade failed: ${upgradeError.message}` });
+      }
+
+      upgradedCampaignId = ((upgradedCampaign as { id?: string } | null)?.id ?? upgradeCampaignId);
+      const { data: profileAfterUpgrade, error: profileAfterUpgradeError } = await supabase
+        .from('user_profiles')
+        .select('campaign_pro_credits')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!profileAfterUpgradeError) {
+        campaignCredits = profileAfterUpgrade?.campaign_pro_credits ?? campaignCredits;
+      }
+    }
 
     console.log('[confirm-stripe-campaign-payment] Credit grant result', {
       sessionId,
       userId: user.id,
       applied,
       campaignCredits,
+      upgradedCampaignId,
     });
 
-    return respond(200, { ok: true, applied, campaignCredits });
+    return respond(200, { ok: true, applied, campaignCredits, upgradedCampaignId });
   } catch (error: unknown) {
     const message = formatStripeError(error, 'Failed to confirm Stripe payment.');
     console.error('[confirm-stripe-campaign-payment] Unhandled error', {

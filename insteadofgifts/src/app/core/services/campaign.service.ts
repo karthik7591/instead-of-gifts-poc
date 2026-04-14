@@ -177,6 +177,19 @@ export class CampaignService {
     return this.toModel(created, 0);
   }
 
+  async upgradeCampaignWithCredit(id: string): Promise<Campaign> {
+    const { data, error } = await this.supabase.client
+      .rpc('upgrade_paid_campaign', { p_campaign_id: id })
+      .single();
+
+    if (error) {
+      this.toastSvc.error(error.message || 'Failed to upgrade campaign.');
+      throw error;
+    }
+
+    return this.toModel(data as CampaignRow, 0);
+  }
+
   private async uploadCoverImage(userId: string, campaignId: string, file: File): Promise<string> {
     const mimeToExt: Record<string, string> = {
       'image/jpeg': 'jpg',

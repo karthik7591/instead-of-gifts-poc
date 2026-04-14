@@ -8,7 +8,7 @@ import {
   PLATFORM_ID,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { CampaignService } from '../../core/services/campaign.service';
 import {
@@ -31,6 +31,7 @@ export interface DashboardRow {
   copySuccess:      boolean;
   closing:          boolean;
   deleting:         boolean;
+  upgrading:        boolean;
   imageUploadOpen:  boolean;
 }
 
@@ -65,6 +66,7 @@ export class DashboardComponent implements OnInit {
   private readonly proSvc      = inject(ProService);
   private readonly stripeSvc   = inject(StripeService);
   private readonly route       = inject(ActivatedRoute);
+  private readonly router      = inject(Router);
   private readonly platformId  = inject(PLATFORM_ID);
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -99,6 +101,9 @@ export class DashboardComponent implements OnInit {
 
   readonly campaignsNeedingUpgrade = computed(() =>
     this.rows().filter((row) => !row.campaign.isPro)
+  );
+  readonly hasProCampaign = computed(() =>
+    this.rows().some((row) => row.campaign.isPro)
   );
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -137,11 +142,12 @@ export class DashboardComponent implements OnInit {
           campaign:        c,
           totals:          totalsArr[i],
           campaignUrl:     origin ? `${origin}/campaigns/${c.slug}` : '',
-          copySuccess:     false,
-          closing:         false,
-          deleting:        false,
-          imageUploadOpen: false,
-        }))
+           copySuccess:     false,
+           closing:         false,
+           deleting:        false,
+           upgrading:       false,
+           imageUploadOpen: false,
+         }))
       );
 
       this.stripeConnect.set(connectStatus);
@@ -342,6 +348,31 @@ export class DashboardComponent implements OnInit {
     } catch (e) {
       console.error('Failed to delete campaign', e);
       this.updateRow(campaign.id, { deleting: false });
+    }
+  }
+
+  async onUpgradeCampaign(campaign: Campaign): Promise<void> {
+    if (!this.campaignCredits()) {
+      await this.router.navigate(['/pro/upgrade/payment'], {
+        queryParams: { campaignId: campaign.id },
+      });
+      return;
+    }
+
+    this.updateRow(campaign.id, { upgrading: true });
+    try {
+      const upgraded = await this.campaignSvc.upgradeCampaignWithCredit(campaign.id);
+      await this.proSvc.loadProfile();
+      this.rows.update((prev) =>
+        prev.map((row) =>
+          row.campaign.id === campaign.id
+            ? { ...row, campaign: upgraded, upgrading: false }
+            : row
+        )
+      );
+    } catch (e) {
+      console.error('Failed to upgrade campaign', e);
+      this.updateRow(campaign.id, { upgrading: false });
     }
   }
 
