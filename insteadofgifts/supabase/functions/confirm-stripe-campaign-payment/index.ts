@@ -53,6 +53,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+    console.log('[confirm-stripe-campaign-payment] Retrieved session', {
+      sessionId,
+      mode: session.mode,
+      paymentStatus: session.payment_status,
+      paymentIntent: typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id ?? null,
+      metaUserId: session.metadata?.['supabase_user_id'] ?? null,
+      userId: user.id,
+    });
     if (session.mode !== 'payment') {
       return respond(400, { error: 'Checkout session is not a one-time payment' });
     }
@@ -65,36 +75,49 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return respond(403, { error: 'Session does not belong to this user' });
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('campaign_pro_credits')
-      .eq('id', user.id)
-      .maybeSingle();
+    const { data, error: grantError } = await supabase
+      .rpc('grant_campaign_credit_if_unprocessed', {
+        p_user_id: user.id,
+        p_payment_provider: 'stripe',
+        p_payment_reference: session.id,
+        p_granted_credits: 1,
+        p_pro_payment_provider: 'stripe',
+        p_pro_since: new Date().toISOString(),
+      })
+      .single();
 
-    if (profileError) {
-      return respond(500, { error: `Failed to load user profile: ${profileError.message}` });
+    if (grantError) {
+      console.error('[confirm-stripe-campaign-payment] Failed to grant campaign credit', {
+        sessionId,
+        userId: user.id,
+        message: grantError.message,
+        code: grantError.code ?? null,
+        details: grantError.details ?? null,
+        hint: grantError.hint ?? null,
+      });
+      return respond(500, { error: `Failed to add campaign credit: ${grantError.message}` });
     }
 
-    const nextCredits = (profile?.campaign_pro_credits ?? 0) + 1;
-    const { error: updateError } = await supabase
-      .from('user_profiles')
-      .upsert(
-        {
-          id: user.id,
-          campaign_pro_credits: nextCredits,
-          pro_payment_provider: 'stripe',
-          pro_since: new Date().toISOString(),
-        },
-        { onConflict: 'id' },
-      );
+    const grantResult = (data ?? null) as { applied?: boolean; campaign_pro_credits?: number } | null;
+    const applied = grantResult?.applied ?? false;
+    const campaignCredits = grantResult?.campaign_pro_credits ?? 0;
 
-    if (updateError) {
-      return respond(500, { error: `Failed to add campaign credit: ${updateError.message}` });
-    }
+    console.log('[confirm-stripe-campaign-payment] Credit grant result', {
+      sessionId,
+      userId: user.id,
+      applied,
+      campaignCredits,
+    });
 
-    return respond(200, { ok: true, campaignCredits: nextCredits });
+    return respond(200, { ok: true, applied, campaignCredits });
   } catch (error: unknown) {
-    return respond(500, { error: formatStripeError(error, 'Failed to confirm Stripe payment.') });
+    const message = formatStripeError(error, 'Failed to confirm Stripe payment.');
+    console.error('[confirm-stripe-campaign-payment] Unhandled error', {
+      sessionId,
+      userId: user.id,
+      message,
+    });
+    return respond(500, { error: message });
   }
 });
 

@@ -6,7 +6,7 @@
 - Backend (Supabase):
   - Postgres tables/views with RLS policies.
   - Supabase Storage bucket for campaign cover photos.
-  - Supabase Edge Functions for Stripe checkout/subscriptions.
+  - Supabase Edge Functions for Stripe/PayPal checkout, confirmation, and Stripe Connect.
 
 The core product is: organisers create campaigns, contributors donate via Stripe, and the app persists outcomes to Postgres.
 
@@ -94,14 +94,14 @@ All app data access is centralized in `src/app/core/services/*`:
      - `CampaignViewComponent` calls `SupabaseService.confirmContribution(sessionId)`.
      - `confirm-contribution` verifies the Stripe session and upserts `public.contributions`.
 
-3. Pro upgrade (subscription)
+3. Campaign credit purchase
    - Route: `/pro/upgrade`
    - UI: `UpgradeComponent`
    - Backend calls:
-     - Invokes Edge Function `stripe-subscription` to create Stripe subscription checkout.
+     - Invokes Edge Function `stripe-campaign-payment` to create a one-time Stripe Checkout session.
    - Post-success activation:
-     - Route: `/pro/upgrade/success` (shows UI and immediately invokes `confirm-subscription` with `session_id`).
-     - `ProService` then reads `user_profiles.is_pro` so guards update the UI.
+     - Route: `/pro/upgrade/success` (shows UI and immediately invokes `confirm-stripe-campaign-payment` with `session_id`).
+     - `ProService` then reloads `user_profiles.campaign_pro_credits`.
 
 ## Backend Architecture (Supabase)
 
@@ -133,6 +133,7 @@ Migrations define three main tables/views:
     - `is_pro`
     - `stripe_customer_id`, `stripe_subscription_id`
     - `pro_since`
+    - `campaign_pro_credits`
 
 Public data is exposed via a view:
 
@@ -190,26 +191,26 @@ Edge Functions live in `supabase/functions/*/index.ts`.
    - Caller: Stripe (server-to-server) with `stripe-signature` verification.
    - Responsibilities:
      - Handle `checkout.session.completed`:
-       - If metadata `type = pro_subscription`: activate Pro by updating `user_profiles`.
+       - If metadata represents a campaign credit payment: update `user_profiles` credits/payment fields.
        - Otherwise: upsert donation contributions after `payment_status === 'paid'`.
      - Handle `payment_intent.succeeded` / `payment_intent.payment_failed` to update contributions status.
-     - Handle `customer.subscription.deleted` to revoke Pro.
+     - Handle other Stripe events needed by the active payment flows.
 
-4. `stripe-subscription`
-   - Caller: Angular `UpgradeComponent`.
+4. `stripe-campaign-payment`
+   - Caller: Angular `UpgradePaymentComponent`.
    - Responsibilities:
      - Authenticate the user (the function validates JWT internally).
      - Create or reuse the Stripe customer (`user_profiles.stripe_customer_id`).
-     - Create Stripe subscription checkout session (mode `subscription`) with metadata `type = pro_subscription` and `supabase_user_id`.
+     - Create a one-time Stripe Checkout session (mode `payment`) for one campaign credit.
      - Returns `{ url }` for the frontend to redirect.
 
-5. `confirm-subscription`
+5. `confirm-stripe-campaign-payment`
    - Caller: Angular `UpgradeSuccessComponent` after redirect success.
    - Responsibilities:
      - Authenticate the user (JWT).
-     - Retrieve subscription Checkout Session by `session_id`.
+     - Retrieve the Checkout Session by `session_id`.
      - Require `payment_status === 'paid'`.
-     - Upsert `user_profiles` to set `is_pro = true` and store Stripe IDs.
+     - Upsert `user_profiles` to add campaign credits and store payment metadata.
 
 ### Realtime Note
 
