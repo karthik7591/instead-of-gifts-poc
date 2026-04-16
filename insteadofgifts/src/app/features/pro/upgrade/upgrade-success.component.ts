@@ -40,8 +40,8 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
               Create your campaign now.
             }
           </p>
-          <app-button variant="pro" size="md" [routerLink]="['/campaigns', 'new']">
-            Create campaign
+          <app-button variant="pro" size="md" [routerLink]="['/dashboard']">
+            Dashboard
           </app-button>
         }
       </div>
