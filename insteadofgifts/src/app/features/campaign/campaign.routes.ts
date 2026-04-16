@@ -3,6 +3,13 @@ import { authGuard } from '../../core/guards/auth.guard';
 
 export const CAMPAIGN_ROUTES: Routes = [
   {
+    path: 'all',
+    loadComponent: () =>
+      import('./list/campaign-list.component').then(
+        (m) => m.CampaignListComponent
+      ),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () =>

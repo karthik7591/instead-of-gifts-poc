@@ -1,0 +1,9 @@
+:host {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-shell {
+  flex: 1 0 auto;
+}

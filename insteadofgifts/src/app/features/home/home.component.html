@@ -212,29 +212,4 @@
     <div class="proof-section--placeholder" aria-hidden="true"></div>
   }
 
-  <!-- ══ FOOTER ═══════════════════════════════════════════════════════════════ -->
-  @defer (on viewport) {
-    <footer class="home-footer" role="contentinfo">
-      <div class="home-footer__inner">
-
-        <p class="home-footer__logo">
-          <span class="home-footer__logo-accent">Instead</span>OfGifts
-        </p>
-        <p class="home-footer__tagline">"Give meaning, not things."</p>
-
-        <nav class="home-footer__nav" aria-label="Footer navigation">
-          <a [routerLink]="['/']" class="home-footer__link">Home</a>
-          <a [routerLink]="['/campaigns', 'new']" class="home-footer__link">Start a campaign</a>
-          <a [routerLink]="['/dashboard']" class="home-footer__link">Dashboard</a>
-          <a [routerLink]="['/pro', 'upgrade']" class="home-footer__link">Pro</a>
-        </nav>
-
-        <p class="home-footer__copy">© {{ year }} InsteadOfGifts. All rights reserved.</p>
-
-      </div>
-    </footer>
-  } @placeholder {
-    <div class="home-footer--placeholder" aria-hidden="true"></div>
-  }
-
 </div>

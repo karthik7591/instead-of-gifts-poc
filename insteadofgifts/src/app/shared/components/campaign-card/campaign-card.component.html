@@ -273,7 +273,7 @@
       </a>
 
       <!-- Progress section -->
-      <div class="mt-4">
+      <div class="campaign-card__progress">
         <app-progress-bar
           [current]="campaign().amountCollected"
           [target]="campaign().targetAmount"
@@ -283,7 +283,7 @@
       </div>
 
       <!-- Actions row -->
-      <div class="mt-4 flex items-center justify-between gap-3">
+      <div class="campaign-card__public-actions">
         <!-- Organiser -->
         <div class="flex items-center gap-2 min-w-0">
           @if (campaign().organiserAvatarUrl) {

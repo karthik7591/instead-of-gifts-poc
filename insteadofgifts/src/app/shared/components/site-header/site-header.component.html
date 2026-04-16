@@ -1,0 +1,41 @@
+<header class="site-header">
+  <div class="site-header__inner">
+    <a routerLink="/" class="site-header__brand" aria-label="InsteadOfGifts home">
+      <img
+        class="site-header__brand-image"
+        src="/images/iog-black.png"
+        alt="InsteadOfGifts"
+      />
+    </a>
+
+    <div class="site-header__actions">
+      @if (user()) {
+        <span class="site-header__credits">Credits: {{ campaignCredits() }}</span>
+
+        <details #profileDropdown class="site-header__dropdown site-header__dropdown--profile">
+          <summary class="site-header__trigger site-header__trigger--profile">
+            <span class="site-header__avatar" aria-hidden="true">{{ initials() }}</span>
+            <span class="site-header__trigger-label">My Profile</span>
+            <svg class="site-header__chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+            </svg>
+          </summary>
+
+          <div class="site-header__panel site-header__panel--profile">
+            <div class="site-header__profile">
+              <p class="site-header__profile-name">{{ displayName() }}</p>
+              <p class="site-header__profile-email">{{ user()?.email }}</p>
+            </div>
+
+            <a routerLink="/dashboard" class="site-header__panel-link" (click)="closeDropdown(profileDropdown)">Dashboard</a>
+            <a routerLink="/campaigns/new" class="site-header__panel-link" (click)="closeDropdown(profileDropdown)">Create Celebration</a>
+            <a routerLink="/pro/upgrade" class="site-header__panel-link" (click)="closeDropdown(profileDropdown)">Buy Credits</a>
+            <button type="button" class="site-header__panel-action" (click)="closeDropdown(profileDropdown); onLogout()">Logout</button>
+          </div>
+        </details>
+      } @else {
+        <a routerLink="/login" class="site-header__login">Login</a>
+      }
+    </div>
+  </div>
+</header>

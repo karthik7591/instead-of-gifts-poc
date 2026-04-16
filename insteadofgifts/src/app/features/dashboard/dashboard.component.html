@@ -1,26 +1,4 @@
 <div class="dashboard-page">
-  <div class="dashboard-page__header">
-    <div class="dashboard-page__inner">
-      <div class="dashboard-header">
-        <div>
-          <p class="dashboard-header__eyebrow">Dashboard</p>
-          <h1 class="dashboard-header__title">Welcome back, {{ greetingName() }}</h1>
-        </div>
-        <div class="dashboard-header__actions">
-          <app-button variant="primary" size="md" [routerLink]="['/campaigns', 'new']">
-            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"/>
-            </svg>
-            Create New Celebration
-          </app-button>
-          <span class="section-header__count">Credits: {{ campaignCredits() }}</span>
-          <app-button variant="secondary" size="md" type="button" [loading]="signingOut()" (clicked)="onLogout()">
-            Logout
-          </app-button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- ── Stripe Connect section ──────────────────────────────────────────── -->
   @if (stripeConnect(); as sc) {
@@ -119,6 +97,21 @@
     }
 
     @if (!loading() && rows().length > 0) {
+      <section class="dashboard-intro">
+        <div>
+          <p class="dashboard-intro__eyebrow">Dashboard</p>
+          <h1 class="dashboard-intro__title">Welcome back, {{ greetingName() }}</h1>
+        </div>
+        <div class="dashboard-intro__actions">
+          <app-button variant="primary" size="md" [routerLink]="['/campaigns', 'new']">
+            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"/>
+            </svg>
+            Create New Celebration
+          </app-button>
+        </div>
+      </section>
+
       <section class="milestones">
         <div class="section-header">
           <h2 class="section-header__title">Milestones</h2>

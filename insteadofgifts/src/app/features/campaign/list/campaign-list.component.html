@@ -1,0 +1,51 @@
+<div class="campaign-list-page">
+  <section class="campaign-list-hero">
+    <div class="campaign-list-hero__inner">
+      <p class="campaign-list-hero__eyebrow">Public Campaigns</p>
+      <h1 class="campaign-list-hero__title">Browse active celebrations</h1>
+      <p class="campaign-list-hero__body">
+        Explore every currently active campaign that is available for contributions.
+      </p>
+      @if (!loading() && !error()) {
+        <p class="campaign-list-hero__meta">
+          {{ activeCount() }} {{ activeCount() === 1 ? 'campaign' : 'campaigns' }} live now
+        </p>
+      }
+    </div>
+  </section>
+
+  <section class="campaign-list-content">
+    <div class="campaign-list-content__inner">
+      @if (loading()) {
+        <div class="campaign-list-state">
+          <p>Loading active campaigns...</p>
+        </div>
+      }
+
+      @if (error()) {
+        <div class="campaign-list-state campaign-list-state--error" role="alert">
+          <p>{{ error() }}</p>
+        </div>
+      }
+
+      @if (!loading() && !error() && campaigns().length === 0) {
+        <div class="campaign-list-state">
+          <p>No active campaigns are available right now.</p>
+        </div>
+      }
+
+      @if (!loading() && !error() && campaigns().length > 0) {
+        <div class="campaign-list-grid">
+          @for (campaign of campaigns(); track campaign.id) {
+            <app-campaign-card
+              [campaign]="campaign"
+              mode="public"
+              [showImage]="true"
+              (shared)="onShare($event)"
+            />
+          }
+        </div>
+      }
+    </div>
+  </section>
+</div>

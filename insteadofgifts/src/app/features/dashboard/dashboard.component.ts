@@ -16,7 +16,6 @@ import {
   CampaignTotals,
   ContributionDisplay,
 } from '../../core/services/supabase.service';
-import { AuthService } from '../../core/services/auth.service';
 import { ProService } from '../../core/services/pro.service';
 import { StripeService } from '../../core/services/stripe.service';
 import { Campaign } from '../../core/models/campaign.model';
@@ -62,7 +61,6 @@ interface StripeConnectStatus {
 export class DashboardComponent implements OnInit {
   private readonly campaignSvc = inject(CampaignService);
   private readonly supabaseSvc = inject(SupabaseService);
-  private readonly authSvc     = inject(AuthService);
   private readonly proSvc      = inject(ProService);
   private readonly stripeSvc   = inject(StripeService);
   private readonly route       = inject(ActivatedRoute);
@@ -73,7 +71,6 @@ export class DashboardComponent implements OnInit {
   readonly rows    = signal<DashboardRow[]>([]);
   readonly loading = signal(true);
   readonly error   = signal<string | null>(null);
-  readonly signingOut     = signal(false);
   readonly connectLoading = signal(false);
   readonly recentActivity = signal<DashboardActivity[]>([]);
   readonly baseHost = signal('insteadofgifts.com');
@@ -389,15 +386,6 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  async onLogout(): Promise<void> {
-    if (this.signingOut()) return;
-    this.signingOut.set(true);
-    try {
-      await this.authSvc.signOut();
-    } finally {
-      this.signingOut.set(false);
-    }
-  }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 

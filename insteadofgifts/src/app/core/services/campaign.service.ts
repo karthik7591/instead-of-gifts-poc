@@ -275,6 +275,21 @@ export class CampaignService {
     return (data as CampaignRow[]).map((row) => this.toModel(row, 0));
   }
 
+  async getActiveCampaigns(): Promise<Campaign[]> {
+    const { data, error } = await this.supabase.client
+      .from('campaigns')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      this.toastSvc.error('Failed to load active campaigns.');
+      throw error;
+    }
+
+    return (data as CampaignRow[]).map((row) => this.toModel(row, 0));
+  }
+
   private toModel(row: CampaignRow, amountCollectedPence: number): Campaign {
     let status: CampaignStatus = 'active';
     if (!row.is_active) {
