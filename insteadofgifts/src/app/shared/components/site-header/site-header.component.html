@@ -10,6 +10,7 @@
 
     <div class="site-header__actions">
       @if (user()) {
+        <a routerLink="/campaigns/all" class="site-header__nav-link">Celebrations</a>
         <span class="site-header__credits">Credits: {{ campaignCredits() }}</span>
 
         <details #profileDropdown class="site-header__dropdown site-header__dropdown--profile">
@@ -34,6 +35,7 @@
           </div>
         </details>
       } @else {
+        <a routerLink="/campaigns/all" class="site-header__nav-link">Celebrations</a>
         <a routerLink="/login" class="site-header__login">Login</a>
       }
     </div>
