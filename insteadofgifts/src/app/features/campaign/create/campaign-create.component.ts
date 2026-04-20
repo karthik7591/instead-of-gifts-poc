@@ -55,7 +55,9 @@ export class CampaignCreateComponent implements OnInit, OnDestroy {
   readonly slugPreview = signal('');
   readonly submitting = signal(false);
   readonly submitError = signal<string | null>(null);
+  readonly showValidationHint = signal(false);
   readonly todayIso = new Date().toISOString().split('T')[0];
+  readonly maxDateIso = '2099-12-31';
   readonly canCreatePaidCampaign = this.proSvc.canCreatePaidCampaign;
   readonly campaignCredits = this.proSvc.campaignCredits;
 
@@ -86,6 +88,12 @@ export class CampaignCreateComponent implements OnInit, OnDestroy {
     });
 
     void this.proSvc.loadProfile();
+
+    this.form.statusChanges.pipe(
+      takeUntil(this.destroy$),
+    ).subscribe(() => {
+      if (this.form.valid) this.showValidationHint.set(false);
+    });
   }
 
   ngOnDestroy(): void {
@@ -95,8 +103,12 @@ export class CampaignCreateComponent implements OnInit, OnDestroy {
 
   async onSubmit(): Promise<void> {
     this.form.markAllAsTouched();
-    if (this.form.invalid || this.submitting()) return;
+    if (this.form.invalid || this.submitting()) {
+      this.showValidationHint.set(this.form.invalid);
+      return;
+    }
 
+    this.showValidationHint.set(false);
     this.submitting.set(true);
     this.submitError.set(null);
 

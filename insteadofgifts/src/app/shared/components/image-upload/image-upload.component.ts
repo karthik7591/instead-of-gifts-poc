@@ -12,6 +12,7 @@ import {
   PLATFORM_ID,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { ImageCroppedEvent, ImageCropperComponent } from 'ngx-image-cropper';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { ToastService } from '../../../core/services/toast.service';
 
@@ -51,6 +52,7 @@ type UploadStep = 'idle' | 'compressing' | 'uploading' | 'done' | 'error';
   selector: 'app-image-upload',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ImageCropperComponent],
   templateUrl: './image-upload.component.html',
   styleUrl:    './image-upload.component.scss',
 })
@@ -92,6 +94,12 @@ export class ImageUploadComponent implements OnDestroy {
   readonly step            = signal<UploadStep>('idle');
   readonly compressionPct  = signal(0);
   readonly errorMessage    = signal<string | null>(null);
+
+  // ── Cropper state ──────────────────────────────────────────────────────────
+
+  readonly showCropper       = signal(false);
+  readonly cropImageFile     = signal<File | null>(null);
+  readonly croppedBlob       = signal<Blob | null>(null);
 
   /**
    * Combined progress percentage shown in the bar.
@@ -220,10 +228,32 @@ export class ImageUploadComponent implements OnDestroy {
       return;
     }
 
+    // ── Open cropper modal ─────────────────────────────────────────────────
+    this.cropImageFile.set(file);
+    this.croppedBlob.set(null);
+    this.showCropper.set(true);
+  }
+
+  // ── Cropper event handlers ─────────────────────────────────────────────────
+
+  onImageCropped(event: ImageCroppedEvent): void {
+    this.croppedBlob.set(event.blob ?? null);
+  }
+
+  async confirmCrop(): Promise<void> {
+    const blob = this.croppedBlob();
+    const original = this.cropImageFile();
+    if (!blob || !original) return;
+
+    this.showCropper.set(false);
+
+    // Convert blob to File with the original name and type
+    const croppedFile = new File([blob], original.name, { type: original.type });
+
     // ── Show preview immediately ───────────────────────────────────────────
     const prevBlob = this.previewUrl();
     if (prevBlob?.startsWith('blob:')) URL.revokeObjectURL(prevBlob);
-    this.previewUrl.set(URL.createObjectURL(file));
+    this.previewUrl.set(URL.createObjectURL(croppedFile));
 
     // ── Compress ───────────────────────────────────────────────────────────
     this.step.set('compressing');
@@ -231,15 +261,13 @@ export class ImageUploadComponent implements OnDestroy {
 
     let compressed: File;
     try {
-      // Dynamic import keeps the heavy library out of the initial bundle
-      // and is naturally browser-only.
       const { default: imageCompression } = await import('browser-image-compression');
 
-      compressed = await imageCompression(file, {
+      compressed = await imageCompression(croppedFile, {
         maxSizeMB:        1,
         maxWidthOrHeight: 1920,
         useWebWorker:     true,
-        fileType:         file.type as 'image/jpeg' | 'image/png' | 'image/webp',
+        fileType:         croppedFile.type as 'image/jpeg' | 'image/png' | 'image/webp',
         onProgress:       (pct) => this.compressionPct.set(pct),
       });
     } catch {
@@ -259,6 +287,12 @@ export class ImageUploadComponent implements OnDestroy {
       // Create flow — wait for the parent to call uploadAfterCreate()
       this.step.set('idle');
     }
+  }
+
+  cancelCrop(): void {
+    this.showCropper.set(false);
+    this.cropImageFile.set(null);
+    this.croppedBlob.set(null);
   }
 
   /**

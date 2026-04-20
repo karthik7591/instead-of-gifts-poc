@@ -152,4 +152,38 @@
     </div>
   }
 
+  <!-- ── Crop modal ──────────────────────────────────────────────────────────── -->
+  @if (showCropper()) {
+    <div class="crop-overlay" (click)="cancelCrop()">
+      <div class="crop-modal" (click)="$event.stopPropagation()">
+        <div class="crop-modal__header">
+          <h3 class="crop-modal__title">Crop your image</h3>
+          <button type="button" class="crop-modal__close" (click)="cancelCrop()" aria-label="Cancel crop">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5.22 5.22a.75.75 0 011.06 0L10 8.94l3.72-3.72a.75.75 0 111.06 1.06L11.06 10l3.72 3.72a.75.75 0 11-1.06 1.06L10 11.06l-3.72 3.72a.75.75 0 11-1.06-1.06L8.94 10 5.22 6.28a.75.75 0 010-1.06z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="crop-modal__body">
+          <image-cropper
+            [imageFile]="cropImageFile()!"
+            [aspectRatio]="16 / 9"
+            [maintainAspectRatio]="true"
+            [resizeToWidth]="1200"
+            format="png"
+            (imageCropped)="onImageCropped($event)"
+          />
+        </div>
+
+        <div class="crop-modal__footer">
+          <button type="button" class="crop-btn crop-btn--cancel" (click)="cancelCrop()">Cancel</button>
+          <button type="button" class="crop-btn crop-btn--confirm" [disabled]="!croppedBlob()" (click)="confirmCrop()">
+            Crop &amp; Upload
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
 </div>
