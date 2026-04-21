@@ -23,7 +23,13 @@ const PENDING_PRO_UPGRADE_CAMPAIGN_KEY = 'pendingProUpgradeCampaignId';
   template: `
     <div class="payment-page">
       <div class="payment-card">
-        <a class="payment-card__back" [routerLink]="['/pro/upgrade']">Back</a>
+        <a
+          class="payment-card__back"
+          [routerLink]="['/pro/upgrade']"
+          [queryParams]="upgradeCampaignId() ? { campaignId: upgradeCampaignId() } : null"
+        >
+          Back
+        </a>
 
         <p class="payment-card__eyebrow">Campaign Access</p>
         <h1 class="payment-card__heading">Choose a payment method</h1>

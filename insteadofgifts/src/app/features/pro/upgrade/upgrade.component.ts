@@ -3,7 +3,7 @@ import {
   Component,
   inject,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ProService } from '../../../core/services/pro.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
@@ -22,6 +22,7 @@ interface PlanFeature {
 })
 export class UpgradeComponent {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly campaignCredits = inject(ProService).campaignCredits;
 
@@ -49,6 +50,9 @@ export class UpgradeComponent {
   }
 
   async onUpgrade(): Promise<void> {
-    await this.router.navigate(['/pro/upgrade/payment']);
+    const campaignId = this.route.snapshot.queryParamMap.get('campaignId');
+    await this.router.navigate(['/pro/upgrade/payment'], {
+      queryParams: campaignId ? { campaignId } : undefined,
+    });
   }
 }

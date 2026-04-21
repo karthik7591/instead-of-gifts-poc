@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CampaignService } from '../../../core/services/campaign.service';
 import { ProService } from '../../../core/services/pro.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
@@ -44,8 +44,8 @@ const PENDING_PRO_UPGRADE_CAMPAIGN_KEY = 'pendingProUpgradeCampaignId';
               {{ confirmationMessage() }}
             }
           </p>
-          <app-button variant="pro" size="md" [routerLink]="['/dashboard']">
-            Dashboard
+          <app-button variant="pro" size="md" [routerLink]="primaryActionLink()">
+            {{ primaryActionLabel() }}
           </app-button>
         }
       </div>
@@ -112,12 +112,15 @@ export class UpgradeSuccessComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly supabase = inject(SupabaseService);
   private readonly proSvc = inject(ProService);
+  private readonly router = inject(Router);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly campaignCredits = this.proSvc.campaignCredits;
   readonly upgradedCampaignId = signal<string | null>(null);
   readonly confirmationMessage = signal('Payment complete.');
+  readonly primaryActionLabel = signal('Dashboard');
+  readonly primaryActionLink = signal<string[]>(['/dashboard']);
 
   async ngOnInit(): Promise<void> {
     const url = new URL(window.location.href);
@@ -158,6 +161,7 @@ export class UpgradeSuccessComponent implements OnInit {
       await this.proSvc.loadProfile();
       await this.autoUpgradeCampaignIfNeeded(campaignId);
       this.updateConfirmationMessage(this.campaignCredits(), this.upgradedCampaignId());
+      await this.redirectToCampaignEditIfPossible(campaignId);
       this.clearPendingUpgradeCampaign();
     } catch (err: unknown) {
       this.error.set(err instanceof Error ? err.message : 'Failed to confirm the campaign payment.');
@@ -187,6 +191,23 @@ export class UpgradeSuccessComponent implements OnInit {
     const upgradedCampaign = await this.campaignSvc.upgradeCampaignWithCredit(campaignId);
     this.upgradedCampaignId.set(upgradedCampaign.id);
     await this.proSvc.loadProfile();
+  }
+
+  private async redirectToCampaignEditIfPossible(fallbackCampaignId: string | null): Promise<void> {
+    const campaignId = this.upgradedCampaignId() ?? fallbackCampaignId;
+    if (!campaignId) {
+      return;
+    }
+
+    const campaign = await this.campaignSvc.getCampaignById(campaignId);
+    if (!campaign) {
+      return;
+    }
+
+    const editLink = ['/campaigns', campaign.slug, 'edit'];
+    this.primaryActionLabel.set('Back to Edit Page');
+    this.primaryActionLink.set(editLink);
+    await this.router.navigate(editLink, { replaceUrl: true });
   }
 
   private getPendingUpgradeCampaignId(): string | null {
