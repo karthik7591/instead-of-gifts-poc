@@ -5,6 +5,7 @@ const supabaseProjectUrl = 'https://mmvabtwjneyrptdmtass.supabase.co';
 
 export const environment: AppEnvironment = {
   production: false,
+  appUrl: 'http://localhost:4200',
   supabase: {
     url: supabaseProjectUrl,
     anonKey: 'sb_publishable_pIR-Mu_88Rjd9oDo2QJdOw_x0FJjRR2',

@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { User } from '@supabase/supabase-js';
+import { environment } from '../../../environments/environment';
 import { SupabaseService } from './supabase.service';
 import { ToastService } from './toast.service';
 
@@ -36,6 +37,14 @@ export class AuthService {
     return this.user();
   }
 
+  private get authCallbackUrl(): string {
+    const baseUrl = typeof window !== 'undefined'
+      ? window.location.origin
+      : environment.appUrl;
+
+    return `${baseUrl}/auth/callback`;
+  }
+
   async signInWithEmail(email: string, password: string): Promise<void> {
     const { error } = await this.supabase.client.auth.signInWithPassword({
       email,
@@ -52,6 +61,9 @@ export class AuthService {
     const { data, error } = await this.supabase.client.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: this.authCallbackUrl,
+      },
     });
     if (error) throw error;
     return data.session !== null;
@@ -60,7 +72,7 @@ export class AuthService {
   async signInWithGoogle(): Promise<void> {
     const { error } = await this.supabase.client.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: this.authCallbackUrl },
     });
     if (error) {
       this.toastSvc.error('Google sign-in failed — please try again.');
@@ -71,7 +83,7 @@ export class AuthService {
   async signInWithApple(): Promise<void> {
     const { error } = await this.supabase.client.auth.signInWithOAuth({
       provider: 'apple',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: this.authCallbackUrl },
     });
     if (error) {
       this.toastSvc.error('Apple sign-in failed — please try again.');
@@ -82,7 +94,7 @@ export class AuthService {
   async resetPasswordForEmail(email: string): Promise<void> {
     const { error } = await this.supabase.client.auth.resetPasswordForEmail(
       email,
-      { redirectTo: `${window.location.origin}/auth/callback` }
+      { redirectTo: this.authCallbackUrl }
     );
     if (error) throw error;
   }
